@@ -493,14 +493,14 @@ def _record_failed_login(ip_key: str, mssv_key: Optional[str]) -> int:
 
 def _login_lock_message(seconds: int) -> str:
     wait = f"{seconds} giây" if seconds < 60 else f"{-(-seconds // 60)} phút"
-    return f"Quá tam ba bận nha bạn! Nghỉ tay chút rồi thử lại sau {wait}."
+    return f"Quá tam ba bận rồi nha, thử lại sau {wait}."
 
 
 def _login_failure_response(message: str, ip_key: str, mssv_key: Optional[str], status: int = 400):
     seconds = _record_failed_login(ip_key, mssv_key)
     body = {"success": False, "message": message}
     if seconds:
-        body["message"] = f"{message} {_login_lock_message(seconds)}"
+        body["message"] = _login_lock_message(seconds)
         body["retry_after"] = seconds
     return jsonify(body), status
 
