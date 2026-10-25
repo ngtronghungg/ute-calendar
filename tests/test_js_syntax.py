@@ -56,6 +56,15 @@ def test_auto_sync_card_always_shows_a_button_or_a_notice():
     assert "Tính năng này đang được chuẩn bị." in html
 
 
+def test_modals_are_opened_and_closed_with_the_same_class():
+    css = _read("app.css")
+    js = _read("app.js")
+    assert ".modal-overlay.open" in css
+    # Closing must remove the class that opening adds ("open"), not a different one.
+    assert "el.classList.remove('active')" not in js
+    assert "e.target.classList.remove('active')" not in js
+
+
 def test_every_tab_button_matches_a_tab_panel():
     import re
 

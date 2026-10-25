@@ -1922,7 +1922,7 @@ let appState = {
       document.addEventListener('click', (e) => {
         // Modal overlay backdrop clicks
         if (e.target.classList.contains('modal-overlay')) {
-          e.target.classList.remove('active');
+          e.target.classList.remove('open');
           return;
         }
 
@@ -1956,7 +1956,7 @@ let appState = {
               const modalId = actionEl.dataset.modal;
               if (modalId) {
                 const el = document.getElementById(modalId);
-                if (el) el.classList.remove('active');
+                if (el) el.classList.remove('open');
               }
               break;
             }
