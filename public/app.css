@@ -917,3 +917,36 @@ body { padding-bottom: env(safe-area-inset-bottom); }
   /* Man hinh hep: chi giu thuong hieu va nut Dang xuat tren mot hang */
   .app-header .user-pill { display: none; }
 }
+/* ---- Trang Hop thu: the "Dung de lo han chot" ---- */
+.deadline-status { margin: 12px 0 4px; }
+.benefit-list { list-style: none; margin: 12px 0 0; padding: 12px 0 0; border-top: 1px solid var(--line); }
+.benefit-list li {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  text-wrap: pretty;
+}
+.benefit-list li:last-child { margin-bottom: 0; }
+.benefit-list li::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0.62em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--accent-text);
+}
+.btn-primary:disabled, .btn-secondary:disabled, .btn-link:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+#remindersActionBar { gap: 12px; }
+@media (max-width: 480px) {
+  #deadlineCalendarCard .sync-actions { flex-direction: column; }
+  #remindersActionBar { flex-direction: column; align-items: stretch; }
+  #remindersActionBar .btn-secondary { width: 100%; }
+}

@@ -75,6 +75,18 @@ def test_modals_are_opened_and_closed_with_the_same_class():
     assert "e.target.classList.remove('active')" not in js
 
 
+def test_inbox_tab_puts_calendar_actions_above_the_filters():
+    html = _read("index.html")
+    js = _read("app.js")
+    card = html.index('id="deadlineCalendarCard"')
+    assert card < html.index('id="chipAll"'), "calendar actions must come before the notice filters"
+    for action in ("deadline-google", "deadline-apple", "deadline-ics"):
+        assert f'data-action="{action}"' in html
+    # The old bottom-bar button silently re-added the timetable instead of the selected reminders.
+    assert 'data-action="sync-selected-google"' not in html
+    assert "syncSelectedToGoogle" not in js
+
+
 def test_every_tab_button_matches_a_tab_panel():
     import re
 

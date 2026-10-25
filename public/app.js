@@ -1373,6 +1373,7 @@ let appState = {
       const count = appState.selectedReminderIds.size;
       document.getElementById('selectedReminderCountText').textContent =
         `Đã chọn ${count} trên tổng số ${appState.considerations.length} nhắc nhở`;
+      updateDeadlineCard();
     }
 
     async function exportCategoryIcs(category) {
@@ -1695,8 +1696,79 @@ let appState = {
       }
     }
 
-    function syncSelectedToGoogle() {
-      handleMainSyncAction();
+    // --- Hạn chót -> lịch (dùng chung biến thể "han-chot" của liên kết lịch) ---
+    function deadlineItems() {
+      return (appState.considerations || []).filter(i => i && i.deadline_iso && (i.days_left == null || i.days_left >= 0));
+    }
+
+    function updateDeadlineCard() {
+      const n = deadlineItems().length;
+      const status = document.getElementById('deadlineStatus');
+      if (status) {
+        status.textContent = n > 0
+          ? `Hiện có ${n} hạn chót sắp tới trong thông báo của bạn.`
+          : 'Chưa có thông báo nào có hạn chót. Khi trường đăng thông báo mới, bạn bấm Quét lại thông báo.';
+      }
+      ['btnDeadlineGoogle', 'btnDeadlineApple', 'btnDeadlineIcs'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) b.disabled = n === 0;
+      });
+      const apple = isAppleDevice();
+      [['btnDeadlineApple', apple], ['btnDeadlineGoogle', !apple]].forEach(([id, primary]) => {
+        const b = document.getElementById(id);
+        if (!b) return;
+        b.classList.remove('btn-primary', 'btn-secondary');
+        b.classList.add(primary ? 'btn-primary' : 'btn-secondary');
+      });
+    }
+
+    async function ensureDeadlineCalendar() {
+      const feed = await ensureFeedInfo();
+      if (!feed) throw new Error('no-feed');
+      let cal = (feed.calendars || []).find(c => c.id === 'han-chot');
+      if (cal) return cal;
+      const o = feed.options || {};
+      const res = await apiFetch('/api/calendar/options', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reminder_min: o.reminder_min !== undefined ? o.reminder_min : 20,
+          title_style: o.title_style || 'name',
+          split: !!o.split,
+          deadlines: true,
+        }),
+      });
+      const data = await res.json();
+      if (!data || !data.success) throw new Error('save-failed');
+      _activeFeedInfo = { ...feed, options: data.options, calendars: data.calendars };
+      cal = (data.calendars || []).find(c => c.id === 'han-chot');
+      if (!cal) throw new Error('no-deadline-calendar');
+      return cal;
+    }
+
+    async function addDeadlineCalendar(kind) {
+      try {
+        const cal = await ensureDeadlineCalendar();
+        if (kind === 'apple') {
+          window.location.href = cal.webcal_url;
+        } else if (kind === 'google') {
+          window.open('https://calendar.google.com/calendar/u/0/r?cid=' + encodeURIComponent(cal.webcal_url), '_blank', 'noopener');
+        } else {
+          const url = cal.feed_url || new URL(cal.url, window.location.origin).href;
+          const res = await fetch(url, { cache: 'no-store' });
+          if (!res.ok) throw new Error('download-failed');
+          const blob = await res.blob();
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'ute-calendar-han-chot.ics';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+      } catch (e) {
+        showBanner('Chưa thêm được hạn chót vào lịch. Bạn thử lại sau ít phút.', 'error');
+      }
     }
 
     function downloadCustomIcs() {
@@ -2008,8 +2080,14 @@ let appState = {
             case 'download-selected-ics':
               downloadSelectedIcs();
               break;
-            case 'sync-selected-google':
-              syncSelectedToGoogle();
+            case 'deadline-google':
+              addDeadlineCalendar('google');
+              break;
+            case 'deadline-apple':
+              addDeadlineCalendar('apple');
+              break;
+            case 'deadline-ics':
+              addDeadlineCalendar('ics');
               break;
             case 'apple-cal':
               addToAppleCalendar();

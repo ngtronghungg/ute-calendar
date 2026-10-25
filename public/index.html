@@ -249,6 +249,28 @@
           </div>
         </div>
 
+        <div id="deadlineCalendarCard" class="card p-24">
+          <h3 class="card-title mb-8">Đừng để lỡ hạn chót</h3>
+          <p class="body-text mb-12">Thêm các hạn chót trong thông báo của trường vào lịch, điện thoại sẽ nhắc bạn trước một ngày.</p>
+          <div class="sync-actions">
+            <button type="button" id="btnDeadlineGoogle" data-action="deadline-google" class="btn-primary sync-device-btn">
+              Thêm vào Google Lịch
+              <span class="sub-text">Android, máy tính</span>
+            </button>
+            <button type="button" id="btnDeadlineApple" data-action="deadline-apple" class="btn-secondary sync-device-btn">
+              Thêm vào Apple Lịch
+              <span class="sub-text">iPhone, iPad, Mac</span>
+            </button>
+          </div>
+          <button type="button" id="btnDeadlineIcs" data-action="deadline-ics" class="btn-link">Tải file lịch (.ics)</button>
+          <p id="deadlineStatus" class="text-muted deadline-status">Đang tải thông báo…</p>
+          <ul class="benefit-list">
+            <li>Hạn đóng học phí, đăng ký môn học, sinh hoạt công dân nằm sẵn trong lịch của bạn.</li>
+            <li>Khỏi phải mở cổng trường để tìm lại thông báo cũ.</li>
+            <li>Thông báo cá nhân và chung của trường gom một chỗ ở bên dưới, có lọc và tìm kiếm.</li>
+          </ul>
+        </div>
+
         <div class="toolbar-row">
           <div class="d-flex gap-6 flex-wrap">
             <button id="chipAll" data-action="notice-filter" data-filter="all" class="filter-chip active">Tất cả <span id="badgeAll" class="">0</span></button>
@@ -269,14 +291,9 @@
           <span id="selectedReminderCountText" class="text-13 text-muted">
             Đã chọn 0 nhắc nhở
           </span>
-          <div class="d-flex gap-8">
-            <button data-action="download-selected-ics" class="btn-secondary btn-compact">
-              Tải .ics
-            </button>
-            <button data-action="sync-selected-google" class="btn-primary btn-compact-14">
-              Thêm vào Google Calendar
-            </button>
-          </div>
+          <button data-action="download-selected-ics" class="btn-secondary btn-compact">
+            Tải .ics đã chọn
+          </button>
         </div>
       </section>
 
