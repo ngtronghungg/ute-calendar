@@ -1,18 +1,23 @@
 /* Page-specific layout & component styling */
     .app-main {
-      padding: 16px 0;
+      padding: 16px;
     }
     @media (min-width: 768px) {
       .app-main {
-        padding: 24px 0;
+        padding: 24px;
       }
     }
 
     .login-wrapper {
       max-width: 440px;
-      margin: 40px auto 0;
+      margin: 24px auto 0;
       text-align: left;
-      padding: 0 16px;
+      padding: 0;
+    }
+    @media (min-width: 768px) {
+      .login-wrapper {
+        margin-top: 40px;
+      }
     }
 
     .sync-container {
@@ -827,4 +832,84 @@
 .download-ics-link:hover {
   color: var(--text);
   text-decoration: underline;
+}
+
+/* ============================================================
+   Mobile refinement
+   Quy tac: dau trang 2 hang, le 16px, vung cham >= 44px,
+   chu to nho dung cho, khong tran ngang.
+   ============================================================ */
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { padding-bottom: env(safe-area-inset-bottom); }
+
+/* Lien ket dang chu: dung mau nhan (ui.css dinh nghia .btn-link hai lan, ban sau lam mat mau) */
+.btn-link { color: var(--accent-text); }
+.btn-link:hover { color: var(--accent-text); text-decoration: underline; }
+.btn-link.text-muted { color: var(--text-muted); }
+.btn-link.text-subtle { color: var(--text-subtle); }
+
+@media (max-width: 640px) {
+  /* Dau trang: hang 1 = thuong hieu + tai khoan, hang 2 = cac tab cuon ngang */
+  .app-header {
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 2px;
+    padding: 10px 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background-color: var(--bg);
+  }
+  .app-brand { order: 1; white-space: nowrap; font-size: 16px; }
+  .header-actions { order: 2; margin-left: auto; min-width: 0; gap: 8px; }
+  .user-pill { max-width: 34vw; padding: 6px 10px; }
+  #userNameDisplay { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 26vw; }
+  .header-actions .btn-sm { white-space: nowrap; min-height: 36px; padding: 0 12px; font-size: 13px; }
+
+  .app-header .nav-tabs {
+    order: 3;
+    flex: 0 0 calc(100% + 32px);
+    margin: 0 -16px;
+    padding: 0 8px;
+    gap: 0;
+    border-bottom: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .app-header .nav-tabs::-webkit-scrollbar { display: none; }
+  .app-header .tab-btn {
+    flex: 1 0 auto;
+    min-height: 44px;
+    padding: 10px 12px;
+    white-space: nowrap;
+    font-size: 14px;
+  }
+
+  /* Khung chinh va the */
+  .app-main { padding: 16px 16px calc(24px + env(safe-area-inset-bottom)); }
+  .card { padding: 16px; margin-bottom: 12px; border-radius: 14px; }
+  .card.p-24, .card.p-20 { padding: 18px 16px; }
+
+  /* Chu: thang kich thuoc nho hon mot bac de khong bi bat xuong dong */
+  h1, .page-title { font-size: 28px; line-height: 1.15; }
+  h2, .section-title { font-size: 20px; line-height: 1.25; }
+  h3, .card-title { font-size: 16px; }
+  .login-wrapper h1 { margin-bottom: 4px; }
+
+  /* Nut va o nhap de bam */
+  .btn-primary, .btn-secondary, .btn-danger { min-height: 48px; }
+  .sync-actions { gap: 8px; margin: 14px 0; }
+
+  /* Chan trang */
+  .site-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 32px;
+    padding: 20px 0 calc(16px + env(safe-area-inset-bottom));
+  }
+  .footer-links a { display: inline-block; padding: 8px 0; }
+  .app-footer { padding: 24px 16px calc(24px + env(safe-area-inset-bottom)); text-align: left; }
+  .app-footer a { display: inline-block; padding: 8px 0; margin: 0 8px 0 0; }
 }
