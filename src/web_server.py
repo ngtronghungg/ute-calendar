@@ -2036,7 +2036,7 @@ def calendar_feed(category_filename="feed.ics"):
 
     headers = {
         "ETag": etag,
-        "Cache-Control": "public, max-age=0, s-maxage=3600",
+        "Cache-Control": "public, max-age=0, s-maxage=21600",
         "Content-Disposition": disposition,
     }
 
@@ -2079,7 +2079,7 @@ def calendar_feed(category_filename="feed.ics"):
         client_etag = request.headers.get("If-None-Match")
         headers = {
             "ETag": etag,
-            "Cache-Control": "public, max-age=0, s-maxage=3600",
+            "Cache-Control": "public, max-age=0, s-maxage=21600",
             "Content-Disposition": f"inline; filename={category_file}",
         }
         if client_etag and client_etag.strip() == etag:
@@ -2097,7 +2097,7 @@ def calendar_feed(category_filename="feed.ics"):
     client_etag = request.headers.get("If-None-Match")
     headers = {
         "ETag": etag,
-        "Cache-Control": "public, max-age=0, s-maxage=3600",
+        "Cache-Control": "public, max-age=0, s-maxage=21600",
         "Content-Disposition": f"inline; filename={category_file}",
     }
     if client_etag and client_etag.strip() == etag:

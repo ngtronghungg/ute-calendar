@@ -446,12 +446,12 @@ def incr_with_ttl(key: str, ttl: int = 600) -> int:
     Used for rate limiting and anonymous access counting.
     """
     if is_redis_available():
-        ok, results = pipeline([
-            ["INCR", str(key)],
-            ["EXPIRE", str(key), int(ttl), "NX"],
-        ])
-        if ok and results and isinstance(results[0], (int, float)):
-            return int(results[0])
+        # Upstash bills per command: INCR alone is 1, and EXPIRE is only needed when the key was just created.
+        ok, count = _exec_redis(["INCR", str(key)])
+        if ok and isinstance(count, (int, float)):
+            if int(count) == 1:
+                _exec_redis(["EXPIRE", str(key), int(ttl)])
+            return int(count)
         return 1
 
     with _LOCAL_LOCK:

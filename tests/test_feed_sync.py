@@ -58,7 +58,7 @@ class TestFeedSync(unittest.TestCase):
         res = self.client.get(f"/calendar/{tok}/feed.ics")
         self.assertEqual(res.status_code, 200)
         self.assertIn("text/calendar", res.content_type)
-        self.assertIn("public, max-age=0, s-maxage=3600", res.headers.get("Cache-Control", ""))
+        self.assertIn("public, max-age=0, s-maxage=21600", res.headers.get("Cache-Control", ""))
 
         etag = res.headers.get("ETag")
         self.assertIsNotNone(etag)
