@@ -208,6 +208,18 @@ let appState = {
       executeLogout();
     }
 
+    // Regular classes carry the internal category "ACADEMIC"; never show that word to students.
+    function categoryLabel(c) {
+      const labels = { ACADEMIC: 'Môn học', EXAM: 'Lịch thi', PERSONAL: 'Nhắc nhở', TUITION: 'Học phí' };
+      return labels[c.category] || 'Môn học';
+    }
+
+    // A badge only helps when an event is not an ordinary class, so classes get none.
+    function categoryBadge(c, color) {
+      if (!c.category || c.category === 'ACADEMIC') return '';
+      return `<span class="class-code" style="color: ${color}; background: ${color}22; border: 1px solid ${color}44;">${escapeHtml(categoryLabel(c))}</span>`;
+    }
+
     let loginCooldownTimer = null;
 
     function formatWait(seconds) {
@@ -847,7 +859,7 @@ let appState = {
                       <div class="class-card" style="border-left: 2px solid ${courseColor}; cursor: pointer; padding: 14px 16px;" data-action="open-class" data-uid="${c.uid}">
                         <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
                           <div>
-                            <span class="class-code" style="color: ${courseColor}; background: ${courseColor}22; border: 1px solid ${courseColor}44;">${escapeHtml(c.category || 'MÔN HỌC')}</span>
+                            ${categoryBadge(c, courseColor)}
                             <h4 style="font-size: 15px; font-weight: 500; color: var(--text); margin-top: 4px; ${isCancelled ? 'text-decoration: line-through; opacity: 0.6;' : ''}">
                               ${escapeHtml(c.title)}
                             </h4>
@@ -909,7 +921,7 @@ let appState = {
       const isCancelled = !!c.is_cancelled;
 
       document.getElementById('modalClassTitle').textContent = c.title;
-      document.getElementById('modalClassCode').textContent = c.category || 'MÔN HỌC';
+      document.getElementById('modalClassCode').textContent = categoryLabel(c);
       document.getElementById('modalClassColorDot').style.background = courseColor;
       document.getElementById('modalClassDayStr').textContent = `${dayName}, ${dateStr}`;
       document.getElementById('modalClassTimeStr').textContent = `${sessName} • ${timeStr}`;
@@ -1000,7 +1012,7 @@ let appState = {
           <div class="class-card" style="${cardStyle} cursor: pointer;" data-action="open-class" data-uid="${c.uid}">
             <div>
               <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                <span class="class-code" style="color: ${courseColor}; background: ${courseColor}22; border: 1px solid ${courseColor}44; font-weight: 600;">${c.category || 'MÔN HỌC'}</span>
+                ${categoryBadge(c, courseColor)}
                 ${badge}
               </div>
               <h3 class="class-title" style="${isCancelled ? 'text-decoration: line-through; opacity: 0.7;' : ''}">${escapeHtml(c.title)}</h3>
