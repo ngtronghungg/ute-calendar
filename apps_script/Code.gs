@@ -10,8 +10,12 @@ const API_BASE = "https://portalapi.hcmute.edu.vn/api/";
 const API_KEY = "utepscRBF0zT2Mqo6vMw69YMOH43IrB2RtXBS0EHit2kzvL2auxaFJBvw==";
 const CLIENT_ID = "ute";
 const CALENDAR_NAME = "HCMUTE";
-const MAX_OPS_PER_RUN = 120;
-const APPS_SCRIPT_VERSION = "1.0.0"; // Giới hạn thao tác mỗi lần chạy để không vượt quá quota 6 phút
+const MAX_OPS_PER_RUN = 120; // Giới hạn thao tác mỗi lần chạy để không vượt quá quota 6 phút
+const APPS_SCRIPT_VERSION = "1.0.0"; // Phải khớp với public/apps_script_version.json
+const UPDATE_URL = "https://ute-calendar.vercel.app/apps_script_version.json";
+const SITE_URL = "https://ute-calendar.vercel.app";
+const VERSION_CHECK_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000; // kiểm tra bản mới mỗi 7 ngày
+const EMAIL_THROTTLE_MS = 24 * 60 * 60 * 1000; // cùng một loại email tối đa 1 lần / 24 giờ
 
 /**
  * Menu khởi tạo khi người dùng mở bảng tính.
@@ -22,6 +26,7 @@ function onOpen() {
     .addItem("Bật tự động cập nhật", "showEnableDialog")
     .addItem("Cập nhật ngay", "syncNowManual")
     .addItem("Xem tình trạng", "showStatusSheet")
+    .addItem("Kiểm tra bản mới", "checkForUpdatesMenu")
     .addSeparator()
     .addItem("Tắt và xoá mật khẩu", "disableAndWipe")
     .addToUi();
@@ -139,6 +144,9 @@ function tick() {
     if (now.getTime() < nextDue) {
       return;
     }
+
+    // Mỗi 7 ngày kiểm tra bản mới một lần (chỉ báo, không tự thay đổi mã)
+    maybeNotifyNewVersion(userProps, now.getTime());
 
     // Đã đến hạn: thực hiện đồng bộ
     let syncResult = null;
@@ -282,6 +290,24 @@ function syncNow(isForce) {
     if (Array.isArray(exByTerm)) rawExams = rawExams.concat(exByTerm);
   } catch (e) {}
 
+  // 3b. Kiểm tra cấu trúc dữ liệu: nếu cổng trường đổi định dạng thì KHÔNG đụng vào lịch hiện có
+  const validation = validatePortalPayload(rawSchedule);
+  if (!validation.ok) {
+    appendChangeLogs(userProps, ["Chưa đọc được lịch, sẽ thử lại"]);
+    emailOncePerDay(
+      userProps,
+      "formatError",
+      "UTE-Calendar - Chưa đọc được lịch",
+      "Cổng trường có thể vừa đổi định dạng dữ liệu nên bảng tính chưa đọc được lịch. " +
+        "Lịch hiện có không bị thay đổi. Hãy dùng menu UTE-Calendar > Kiểm tra bản mới."
+    );
+    return { success: false, networkError: false, message: "Chưa đọc được lịch, bạn thử lại sau." };
+  }
+  if (validation.items.length === 0 && rawExams.length === 0) {
+    // Cổng trường chưa có lịch cho học kỳ này: giữ nguyên lịch hiện có
+    return { success: true, message: "Cổng trường chưa có thời khoá biểu cho học kỳ này.", changesCount: 0 };
+  }
+
   // 4. Chuyển đổi dữ liệu sang định dạng sự kiện chuẩn bằng Logic.gs
   const classEvents = parseSemesterSchedule(rawSchedule);
   const examEvents = parseExamSchedule(rawExams);
@@ -337,6 +363,19 @@ function syncNow(isForce) {
 
   // Tính sai khác (diff)
   const diff = diffEvents(Object.values(existingMap), relevantPortalEvents);
+
+  // Chốt an toàn xoá hàng loạt: kết quả mới ít bất thường so với lịch hiện có thì không động vào gì
+  if (diff.circuitBreakerTriggered) {
+    appendChangeLogs(userProps, ["Dữ liệu từ trường có vẻ bất thường, chưa thay đổi lịch"]);
+    emailOncePerDay(
+      userProps,
+      "massDelete",
+      "UTE-Calendar - Tạm dừng cập nhật để bảo vệ lịch",
+      "Dữ liệu mới từ cổng trường ít hơn nhiều so với lịch hiện có nên bảng tính đã dừng, không xoá gì cả. " +
+        "Nếu nguyên nhân là cổng trường đổi định dạng, hãy dùng menu UTE-Calendar > Kiểm tra bản mới."
+    );
+    return { success: false, networkError: false, message: "Dữ liệu từ trường có vẻ bất thường, lịch được giữ nguyên." };
+  }
 
   // Quản lý màu môn học (lưu map trong UserProperties)
   let colorMap = {};
@@ -682,20 +721,77 @@ function sendEmailNotification(subject, body) {
  * Kiểm tra phiên bản mới định kỳ từ server.
  */
 function checkAppsScriptUpdate() {
+  if (!UPDATE_URL) return { failed: true, hasUpdate: false };
   try {
-    const url = "https://ute-calendar.com/apps_script_version.json";
-    const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const res = UrlFetchApp.fetch(UPDATE_URL, { muteHttpExceptions: true });
     if (res.getResponseCode() === 200) {
       const data = JSON.parse(res.getContentText());
       if (data && data.version) {
         if (compareVersions(APPS_SCRIPT_VERSION, data.version) < 0) {
-          Logger.log("Có bản cập nhật mới cho UTE-Calendar: v" + data.version);
-          return { hasUpdate: true, latest: data.version, message: data.message };
+          return { hasUpdate: true, latest: String(data.version), message: data.message };
         }
+        return { hasUpdate: false, latest: String(data.version) };
       }
     }
   } catch (e) {
-    // Bỏ qua lỗi kết nối
+    // Lỗi mạng hoặc dữ liệu hỏng: coi như chưa kiểm tra được
   }
-  return { hasUpdate: false };
+  return { failed: true, hasUpdate: false };
+}
+
+/**
+ * Nội dung báo có bản mới. Chỉ dẫn về trang của dự án, không tự thay đổi mã.
+ */
+function newVersionMessage(latest) {
+  return "Có bản mới (" + latest + "). Hãy tạo bản sao lại từ trang UTE-Calendar (" + SITE_URL +
+    "), rồi bật tự động cập nhật ở bản sao mới. Bản cũ vẫn chạy cho tới khi bạn tắt.";
+}
+
+/**
+ * Mục menu "Kiểm tra bản mới".
+ */
+function checkForUpdatesMenu() {
+  const ui = SpreadsheetApp.getUi();
+  if (!UPDATE_URL) {
+    ui.alert("Kiểm tra bản mới", "Chưa cấu hình nơi kiểm tra bản mới.", ui.ButtonSet.OK);
+    return;
+  }
+  const r = checkAppsScriptUpdate();
+  if (r.failed) {
+    ui.alert("Kiểm tra bản mới", "Chưa kiểm tra được, bạn thử lại sau.", ui.ButtonSet.OK);
+  } else if (r.hasUpdate) {
+    ui.alert("Kiểm tra bản mới", newVersionMessage(r.latest), ui.ButtonSet.OK);
+  } else {
+    ui.alert("Kiểm tra bản mới", "Bạn đang dùng bản mới nhất (" + APPS_SCRIPT_VERSION + ").", ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Mỗi 7 ngày kiểm tra một lần; có bản mới thì gửi đúng một email cho mỗi phiên bản.
+ */
+function maybeNotifyNewVersion(userProps, nowMs) {
+  try {
+    const last = parseInt(userProps.getProperty("lastVersionCheck") || "0", 10);
+    if (nowMs - last < VERSION_CHECK_INTERVAL_MS) return;
+    userProps.setProperty("lastVersionCheck", String(nowMs));
+    const r = checkAppsScriptUpdate();
+    if (r.hasUpdate && userProps.getProperty("notifiedVersion") !== r.latest) {
+      userProps.setProperty("notifiedVersion", r.latest);
+      sendEmailNotification("Có bản mới của bảng tính UTE-Calendar", newVersionMessage(r.latest));
+    }
+  } catch (e) {
+    // Không để việc kiểm tra bản mới làm hỏng đồng bộ lịch
+  }
+}
+
+/**
+ * Gửi email nhưng cùng một loại chỉ tối đa 1 lần trong 24 giờ (tránh làm phiền).
+ */
+function emailOncePerDay(userProps, key, subject, body) {
+  const propName = "lastEmail_" + key;
+  const last = parseInt(userProps.getProperty(propName) || "0", 10);
+  const now = new Date().getTime();
+  if (now - last < EMAIL_THROTTLE_MS) return;
+  userProps.setProperty(propName, String(now));
+  sendEmailNotification(subject, body);
 }
