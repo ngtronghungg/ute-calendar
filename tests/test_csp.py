@@ -70,8 +70,14 @@ def test_strict_csp_header(client):
     assert "frame-ancestors 'none'" in csp
     assert "object-src 'none'" in csp
 
-    # Strictly forbid unsafe-inline
-    assert "'unsafe-inline'" not in csp
+    # Scripts and stylesheets stay strict. The ONLY relaxation is inline style ATTRIBUTES
+    # (style="...") used by JS-rendered cards; never <style> elements or inline scripts.
+    directives = {d.strip().split(" ", 1)[0]: d.strip() for d in csp.split(";") if d.strip()}
+    assert "'unsafe-inline'" not in directives["script-src"]
+    assert "'unsafe-inline'" not in directives["style-src"]
+    assert "'unsafe-eval'" not in csp
+    unsafe = [name for name, value in directives.items() if "'unsafe-inline'" in value]
+    assert unsafe in ([], ["style-src-attr"])
 
 
 def test_static_cache_headers(client):

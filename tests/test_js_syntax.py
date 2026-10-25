@@ -27,6 +27,15 @@ def test_every_data_action_has_a_handler():
     assert not (used - handled), f"actions without a handler: {sorted(used - handled)}"
 
 
+def test_js_rendered_html_has_no_inline_event_handlers():
+    import re
+
+    js = _read("app.js")
+    # CSP blocks onclick="..." even when it sits inside a string that JS turns into HTML.
+    found = re.findall(r"\bon(?:click|change|input|submit|keydown|keyup|focus|blur|mouseover)\s*=\s*[\"']", js)
+    assert not found, f"inline handlers inside JS templates: {found}"
+
+
 def test_js_does_not_depend_on_inline_handler_attributes():
     js = _read("app.js")
     assert "getAttribute('onclick')" not in js

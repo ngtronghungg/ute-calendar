@@ -14,6 +14,7 @@ let appState = {
       selectedReminderIds: new Set(),
       currentTab: 'schedule',
       includePastSchedule: true,
+      listOnlyUpcoming: true,
       includePastExams: false,
       overviewData: null,
       scheduleViewMode: 'matrix',
@@ -362,8 +363,9 @@ let appState = {
     }
 
     function toggleSchedulePast(onlyUpcoming) {
-      appState.includePastSchedule = !onlyUpcoming;
-      loadOverviewData();
+      // Chỉ lọc ở chế độ Danh sách; lưới tuần và theo ngày luôn cần đủ dữ liệu cả kỳ.
+      appState.listOnlyUpcoming = !!onlyUpcoming;
+      renderScheduleCalendar();
     }
 
     function toggleExamsPast(onlyUpcoming) {
@@ -386,15 +388,10 @@ let appState = {
       const subTitleEl = document.getElementById('semesterSubtitle');
       const toggleLabelEl = document.getElementById('scheduleToggleLabel');
       if (subTitleEl && toggleLabelEl) {
-        if (appState.includePastSchedule) {
-          subTitleEl.textContent =
-            `Học kỳ ${data.term} • Năm học ${data.year} (Tổng cộng ${totalCount} buổi học cả kỳ)`;
-          toggleLabelEl.textContent = `Hiện tất cả (${totalCount})`;
-        } else {
-          subTitleEl.textContent =
-            `Học kỳ ${data.term} • Năm học ${data.year} • ${upCount} buổi học sắp tới (từ hôm nay đến hết học kỳ)`;
-          toggleLabelEl.textContent = `Chỉ hiện lịch sắp tới (${upCount})`;
-        }
+        subTitleEl.textContent =
+          `Học kỳ ${data.term} • Năm học ${data.year} • ${totalCount} buổi học cả kỳ`;
+        const upcomingNow = appState.classes.filter(c => new Date(c.end) >= new Date()).length;
+        toggleLabelEl.textContent = `Chỉ hiện lịch sắp tới (${upcomingNow})`;
       }
 
       const upExams = data.upcoming_exams_count ?? appState.exams.length;
@@ -617,7 +614,7 @@ let appState = {
           const isToday = d.getTime() === now.getTime();
           const isActive = i === appState.selectedDayIndex;
           return `
-            <div class="mobile-day-btn ${isActive ? 'active' : ''} ${isToday ? 'is-today' : ''}" onclick="setMobileDay(${i})">
+            <div class="mobile-day-btn ${isActive ? 'active' : ''} ${isToday ? 'is-today' : ''}" data-action="set-mobile-day" data-day="${i}">
               <span style="font-weight: 500;">${shortName}</span>
               <span style="font-size: 10px;">${d.getDate()}/${d.getMonth() + 1}</span>
             </div>
@@ -631,7 +628,11 @@ let appState = {
       } else if (appState.scheduleViewMode === 'day') {
         renderScheduleDayView();
       } else if (appState.scheduleViewMode === 'list') {
-        renderScheduleGrid(appState.classes);
+        const nowDt = new Date();
+        const listItems = appState.listOnlyUpcoming
+          ? appState.classes.filter(c => new Date(c.end) >= nowDt)
+          : appState.classes;
+        renderScheduleGrid(listItems);
       }
     }
 
@@ -725,7 +726,7 @@ let appState = {
               const isCancelled = !!c.is_cancelled;
 
               html += `
-                <div class="matrix-card-chip ${isCancelled ? 'cancelled' : ''}" style="border-left-color: ${courseColor};" onclick="openClassDetailModal('${c.uid}')" title="Nhấp để xem chi tiết buổi học">
+                <div class="matrix-card-chip ${isCancelled ? 'cancelled' : ''}" style="border-left-color: ${courseColor};" data-action="open-class" data-uid="${c.uid}" title="Nhấp để xem chi tiết buổi học">
                   <div class="matrix-chip-title" style="${isCancelled ? 'text-decoration: line-through; opacity: 0.6;' : ''}"><span class="course-dot" style="background: ${courseColor};"></span>${escapeHtml(c.title)}
                   </div>
                   <div class="matrix-chip-meta">
@@ -804,7 +805,7 @@ let appState = {
                     const isCancelled = !!c.is_cancelled;
 
                     return `
-                      <div class="class-card" style="border-left: 2px solid ${courseColor}; cursor: pointer; padding: 14px 16px;" onclick="openClassDetailModal('${c.uid}')">
+                      <div class="class-card" style="border-left: 2px solid ${courseColor}; cursor: pointer; padding: 14px 16px;" data-action="open-class" data-uid="${c.uid}">
                         <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
                           <div>
                             <span class="class-code" style="color: ${courseColor}; background: ${courseColor}22; border: 1px solid ${courseColor}44;">${escapeHtml(c.category || 'MÔN HỌC')}</span>
@@ -953,11 +954,11 @@ let appState = {
         }
 
         const cancelActionBtn = isCancelled
-          ? `<button class="btn-secondary" style="padding: 4px 10px; font-size: 11px; margin-top: 10px; color: var(--warn); border-color: var(--line);" onclick="event.stopPropagation(); toggleCancelSession('${c.uid}', false)">Khôi phục buổi học</button>`
-          : `<button class="btn-secondary" style="padding: 4px 10px; font-size: 11px; margin-top: 10px; color: var(--warn); border-color: rgba(239, 68, 68, 0.2);" onclick="event.stopPropagation(); toggleCancelSession('${c.uid}', true)" title="Đánh dấu nếu Giảng viên / Khoa thông báo cho nghỉ buổi học này">Đánh dấu giảng viên cho nghỉ</button>`;
+          ? `<button class="btn-secondary" style="padding: 4px 10px; font-size: 11px; margin-top: 10px; color: var(--warn); border-color: var(--line);" data-action="cancel-session" data-uid="${c.uid}" data-cancel="false">Khôi phục buổi học</button>`
+          : `<button class="btn-secondary" style="padding: 4px 10px; font-size: 11px; margin-top: 10px; color: var(--warn); border-color: rgba(239, 68, 68, 0.2);" data-action="cancel-session" data-uid="${c.uid}" data-cancel="true" title="Đánh dấu nếu Giảng viên / Khoa thông báo cho nghỉ buổi học này">Đánh dấu giảng viên cho nghỉ</button>`;
 
         return `
-          <div class="class-card" style="${cardStyle} cursor: pointer;" onclick="openClassDetailModal('${c.uid}')">
+          <div class="class-card" style="${cardStyle} cursor: pointer;" data-action="open-class" data-uid="${c.uid}">
             <div>
               <div style="display: flex; align-items: center; margin-bottom: 8px;">
                 <span class="class-code" style="color: ${courseColor}; background: ${courseColor}22; border: 1px solid ${courseColor}44; font-weight: 600;">${c.category || 'MÔN HỌC'}</span>
@@ -1180,7 +1181,7 @@ let appState = {
             <div style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 8px;">
               ${err.name === 'AbortError' ? 'Cổng Portal trường đang phản hồi chậm.' : 'Chưa có thông báo nào cần nhắc nhở.'}
             </div>
-            <button class="btn-secondary" style="padding: 6px 14px; font-size: 12px;" onclick="loadConsiderations(true)">
+            <button class="btn-secondary" style="padding: 6px 14px; font-size: 12px;" data-action="refresh-notices">
               Quét lại thông báo
             </button>
           </div>`;
@@ -1273,18 +1274,18 @@ let appState = {
                 ${countdownPill}
                 ${it.deadline ? `<span class="deadline-pill">Hạn chót: ${escapeHtml(it.deadline)}</span>` : ''}
               </div>
-              <h4 class="reminder-title" style="cursor: pointer; margin-top: 6px;" onclick="openNoticeModal('${it.id}', '${it.notice_type || 'general'}')">${escapeHtml(it.title)}</h4>
+              <h4 class="reminder-title" style="cursor: pointer; margin-top: 6px;" data-action="open-notice" data-id="${it.id}" data-type="${it.notice_type || 'general'}">${escapeHtml(it.title)}</h4>
               ${metaInfo ? `<div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px;">${metaInfo}</div>` : ''}
               <p class="reminder-action">${escapeHtml(it.action)}</p>
               <p class="reminder-reason">${escapeHtml(it.recommendation)}</p>
               <div style="display: flex; gap: 8px; margin-top: 12px; align-items: center; flex-wrap: wrap;">
-                <button class="btn-secondary" style="padding: 5px 12px; font-size: 12px;" onclick="openNoticeModal('${it.id}', '${it.notice_type || 'general'}')">
+                <button class="btn-secondary" style="padding: 5px 12px; font-size: 12px;" data-action="open-notice" data-id="${it.id}" data-type="${it.notice_type || 'general'}">
                   Xem chi tiết thông báo
                 </button>
               </div>
             </div>
             <label class="ios-switch" title="Chọn đồng bộ vào lịch">
-              <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleReminder('${it.id}', this.checked)">
+              <input type="checkbox" ${isSelected ? 'checked' : ''} data-change="toggle-reminder" data-id="${it.id}">
               <span class="slider"></span>
             </label>
           </div>
@@ -1320,7 +1321,7 @@ let appState = {
         if (window.DOMPurify && data.content_html) {
           const cleanHtml = DOMPurify.sanitize(data.content_html, {
             FORBID_TAGS: ['script', 'iframe', 'style', 'object', 'embed'],
-            FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur']
+            FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'style']
           });
           bodyEl.innerHTML = cleanHtml;
           bodyEl.querySelectorAll('a').forEach(a => {
@@ -1971,6 +1972,18 @@ let appState = {
             case 'refresh-notices':
               loadConsiderations(true);
               break;
+            case 'set-mobile-day':
+              setMobileDay(parseInt(actionEl.dataset.day, 10));
+              break;
+            case 'open-class':
+              openClassDetailModal(actionEl.dataset.uid);
+              break;
+            case 'cancel-session':
+              toggleCancelSession(actionEl.dataset.uid, actionEl.dataset.cancel === 'true');
+              break;
+            case 'open-notice':
+              openNoticeModal(actionEl.dataset.id, actionEl.dataset.type || 'general');
+              break;
             case 'nav-week':
               navScheduleWeek(parseInt(actionEl.dataset.delta, 10));
               break;
@@ -2083,6 +2096,11 @@ let appState = {
 
       const exToggle = document.getElementById('onlyUpcomingExamsToggle');
       if (exToggle) exToggle.addEventListener('change', (e) => toggleExamsPast(e.target.checked));
+
+      document.addEventListener('change', (e) => {
+        const t = e.target && e.target.closest ? e.target.closest('[data-change="toggle-reminder"]') : null;
+        if (t) toggleReminder(t.dataset.id, t.checked);
+      });
 
       const noticeInput = document.getElementById('noticeSearchInput');
       if (noticeInput) noticeInput.addEventListener('input', (e) => onNoticeSearchChange(e.target.value));
