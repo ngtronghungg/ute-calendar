@@ -88,6 +88,11 @@ let appState = {
 
     
     async function enterGuestSyncMode() {
+      const guestGuide = document.getElementById('guestGuideBox');
+      const guestNotice = document.getElementById('guestPrepNotice');
+      let hasTemplate = false;
+      guestGuide?.classList.add('hidden');
+      guestNotice?.classList.add('hidden');
       document.getElementById('loginView')?.classList.add('hidden');
       const guestView = document.getElementById('guestSyncView');
       if (guestView) {
@@ -97,7 +102,8 @@ let appState = {
         const res = await fetch('/api/public-config');
         if (res.ok) {
           const data = await res.json();
-          if (data.auto_sync_template_url) {
+          if (data.auto_sync_template_url && data.auto_sync_template_url.trim()) {
+            hasTemplate = true;
             let copyUrl = data.auto_sync_template_url.trim();
             if (!copyUrl.endsWith('/copy')) {
               copyUrl = copyUrl.replace(/\/(edit|view|copy)?(\?.*)?$/, '/copy');
@@ -113,6 +119,9 @@ let appState = {
       } catch (e) {
         console.warn('Lỗi tải cấu hình công khai:', e);
       }
+      // Chỉ hiện hướng dẫn khi bảng mẫu thật sự tồn tại; nếu không thì báo "đang chuẩn bị"
+      guestGuide?.classList.toggle('hidden', !hasTemplate);
+      guestNotice?.classList.toggle('hidden', hasTemplate);
     }
 
     function exitGuestSyncMode() {

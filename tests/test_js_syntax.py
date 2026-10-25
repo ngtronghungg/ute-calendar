@@ -49,6 +49,16 @@ def test_js_toggles_visibility_with_the_hidden_class_only():
     assert "style.display" not in js, "use classList.add/remove('hidden') instead"
 
 
+def test_guest_view_hides_copy_button_until_a_template_exists():
+    html = _read("index.html")
+    js = _read("app.js")
+    assert 'id="guestGuideBox"' in html and 'id="guestPrepNotice"' in html
+    # The guide (with the "Tạo bản sao" button) must start hidden and be revealed only by JS.
+    guide_tag = html[html.index('id="guestGuideBox"') - 10 : html.index('id="guestGuideBox"') + 80]
+    assert "hidden" in guide_tag
+    assert "hasTemplate" in js and "guestGuide?.classList.toggle('hidden', !hasTemplate)" in js
+
+
 def test_auto_sync_card_always_shows_a_button_or_a_notice():
     html = _read("index.html")
     assert 'id="btnToggleAutoGuide"' in html
