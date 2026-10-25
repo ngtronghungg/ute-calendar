@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/ui.css">
+  <title>Bảo mật - UTE-Calendar</title>
+</head>
+<body>
+
+  <div class="container doc-page">
+    <header class="app-header-clean">
+      <a href="/" class="brand-link" aria-label="Trang chủ UTE-Calendar">
+        <img src="/logo-mark-white.svg" width="28" height="28" alt="">
+        <span class="brand-name">UTE-Calendar</span>
+      </a>
+      <a href="/" class="back-link">&larr; Quay lại trang chủ</a>
+    </header>
+
+    <main class="legal-content">
+      <h1>Chính sách bảo mật</h1>
+      <p class="subtitle">Minh bạch về những thông tin được lưu, mục đích sử dụng và cách xoá dữ liệu.</p>
+
+      <h2>1. Hai chế độ hoạt động</h2>
+
+      <div class="card">
+        <h3 class="card-title-spaced">Chế độ mặc định (đường dẫn Lịch)</h3>
+        <p class="text-muted text-14">
+          Máy chủ <strong>không lưu mật khẩu</strong> của bạn. Khi bạn đăng nhập, mật khẩu được dùng đúng một lần để gửi trực tiếp đến cổng trường qua kết nối HTTPS an toàn nhằm xác thực danh tính sinh viên, sau đó bị giải phóng ngay lập tức khỏi bộ nhớ. Máy chủ chỉ lưu nội dung lịch đã dựng sẵn và liên kết ngẫu nhiên để phục vụ ứng dụng Lịch trên thiết bị của bạn.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title-spaced">Chế độ tự cập nhật (bảng tính Google Sheets)</h3>
+        <p class="text-muted text-14">
+          Mật khẩu và thông tin đăng nhập của bạn được lưu trữ hoàn toàn trong <strong>tài khoản Google cá nhân của chính bạn</strong> (thông qua dịch vụ lưu trữ thuộc tính người dùng an toàn của Google). Mã nguồn tự động chạy trên tài khoản Google cá nhân và kết nối thẳng đến cổng trường, hoàn toàn không gửi mật khẩu về máy chủ của dự án.
+        </p>
+      </div>
+
+      <h2>2. Dữ liệu nào được lưu</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Dữ liệu</th>
+              <th>Mục đích</th>
+              <th>Nơi lưu</th>
+              <th>Thời hạn</th>
+              <th>Cách xoá</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Nội dung lịch đã dựng</strong> (lịch học và lịch thi)</td>
+              <td>Cung cấp tệp lịch chuẩn cho ứng dụng Lịch (Apple Calendar, Google Calendar) tự động đồng bộ</td>
+              <td>Bộ nhớ đệm máy chủ (khóa <code>feed:&lt;chuỗi_ngẫu_nhiên&gt;</code>)</td>
+              <td>Tối đa 150 ngày (một học kỳ)</td>
+              <td>Bấm "Xoá dữ liệu của tôi" hoặc khi đăng xuất</td>
+            </tr>
+            <tr>
+              <td><strong>Liên kết Lịch ngẫu nhiên</strong></td>
+              <td>Định danh bí mật thay thế cho MSSV trong đường dẫn, tránh việc bị người khác đoán được liên kết</td>
+              <td>Bộ nhớ máy chủ (khóa <code>feedtok:&lt;chuỗi&gt;</code>)</td>
+              <td>Tối đa 150 ngày (một học kỳ)</td>
+              <td>Bấm "Tạo lại liên kết" hoặc "Xoá dữ liệu của tôi"</td>
+            </tr>
+            <tr>
+              <td><strong>Phiên đăng nhập tạm</strong></td>
+              <td>Giữ trạng thái đăng nhập trên trình duyệt của bạn</td>
+              <td>Cookie bảo mật <code>hcmute_session</code> (HttpOnly)</td>
+              <td>Thời hạn của phiên cổng trường (khoảng vài giờ, tối đa 24 giờ)</td>
+              <td>Bấm nút "Đăng xuất"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-muted text-13">Phiên đăng nhập cổng trường chỉ được giữ trong thời hạn của chính phiên đó (khoảng vài giờ, tối đa 24 giờ).</p>
+
+      <h2>3. Dữ liệu chúng tôi không bao giờ lưu</h2>
+      <ul>
+        <li><strong>Tài khoản quản trị:</strong> Dự án không có tài khoản quản trị và không có trang nào để xem dữ liệu của sinh viên.</li>
+        <li><strong>Mật khẩu sinh viên:</strong> Không lưu ở bất kỳ cơ sở dữ liệu hay tệp tin nào trên máy chủ.</li>
+        <li><strong>Lịch sử truy cập kèm MSSV:</strong> Không ghi log hành vi truy cập gắn liền với thông tin cá nhân.</li>
+        <li><strong>Địa chỉ IP thô:</strong> IP của bạn không bị lưu trữ vĩnh viễn cùng mã số sinh viên.</li>
+        <li><strong>Học phí và thông báo:</strong> Ứng dụng có đọc thông báo và công nợ học phí từ cổng trường để nhắc hạn. Nội dung chỉ được giữ tạm tối đa 10 phút để hiển thị, không lưu lâu dài. Ứng dụng không đọc điểm thi hay bảng điểm.</li>
+        <li><strong>Số CCCD / CMND:</strong> Hoàn toàn không thu thập.</li>
+        <li><strong>Tài khoản ngân hàng / Tài chính:</strong> Hoàn toàn không thu thập.</li>
+      </ul>
+
+      <h2>4. Cách xoá dữ liệu của bạn</h2>
+      <p>
+        Bạn có toàn quyền xoá bỏ hoàn toàn dấu vết dữ liệu của mình bất cứ khi nào:
+      </p>
+      <ul>
+        <li><strong>Tự xoá ngay lập tức (1 chạm):</strong> Đăng nhập trang web, vào phần <em>Cài đặt liên kết</em> và bấm nút <strong>"Xoá dữ liệu của tôi"</strong>. Toàn bộ phiên làm việc, nội dung lịch đã dựng và khóa liên kết trên máy chủ sẽ bị xoá vĩnh viễn.</li>
+        <li id="contactManualDelete"><strong>Yêu cầu xoá:</strong> <span id="contactInfoText">Bạn có thể tự xoá ngay bằng nút Xoá dữ liệu của tôi.</span></li>
+      </ul>
+
+      <h2>5. Miễn trừ trách nhiệm</h2>
+      <p>
+        UTE-Calendar là dự án cộng đồng do sinh viên phát triển. Dự án <strong>không do Trường Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE) vận hành</strong>. Sinh viên tự nguyện sử dụng và tự quản lý liên kết lịch cá nhân của mình.
+      </p>
+    </main>
+
+    <footer class="app-footer">
+      <div class="footer-links">
+        <a href="/hoi-dap">Hỏi đáp</a> ·
+        <a href="/bao-mat">Bảo mật</a> ·
+        <a href="/dieu-khoan">Điều khoản</a> ·
+        <a href="#" id="bugReportLink" class="bug-report-link">Báo lỗi</a>
+      </div>
+      <div class="footer-disclaimer">
+        UTE-Calendar là dự án cộng đồng, không do Trường ĐH Sư phạm Kỹ thuật TP.HCM vận hành
+      </div>
+    </footer>
+  </div>
+
+  <script src="/static-page.js"></script>
+</body>
+</html>

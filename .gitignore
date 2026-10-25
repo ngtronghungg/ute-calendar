@@ -1,0 +1,52 @@
+# Python & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+env/
+venv/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment & Secrets (CRITICAL SECURITY: NEVER COMMIT SECRETS)
+.env
+.env.*
+*.env
+!.env.example
+*.secrets*
+.secrets*
+*secrets.json
+config/credentials.json
+config/token.json
+google_token.json
+
+# HCMUTE Auth Vaults & Ephemeral Caches
+.token_cache.json
+.auth_vault.json
+.admin_token.json
+
+# Ignore Entire Data Directory (User data, caches, snapshots, redis fallback)
+data/*
+data/.*
+data/**/*
+!data/.gitkeep
+
+# Scratch, Temporary & Generated Files
+AUDIT_ANTIGRAVITY.md
+scratch/
+.system_generated/
+*.ics
+*.tmp*
+*.json.tmp*
+*.bak
+*.log
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.vercel/

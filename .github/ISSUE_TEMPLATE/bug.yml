@@ -1,0 +1,40 @@
+name: Báo lỗi
+description: Gửi phản hồi hoặc báo cáo sự cố trên UTE-Calendar
+title: "[Lỗi]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cảm ơn bạn đã báo lỗi giúp hoàn thiện UTE-Calendar.
+        **Lưu ý quan trọng**: Tuyệt đối không nhập MSSV, mật khẩu hoặc bất kỳ thông tin cá nhân nào vào đây.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Mô tả sự cố
+      description: Sự cố gì đã xảy ra?
+      placeholder: Mô tả ngắn gọn về vấn đề bạn gặp phải...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Các bước tái hiện lỗi
+      description: Bạn đã thao tác như thế nào trước khi gặp lỗi?
+      placeholder: |
+        1. Mở trang...
+        2. Bấm vào...
+        3. Thấy hiển thị...
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Thiết bị và Trình duyệt
+      description: Ví dụ: iPhone 13 (Safari), Windows 11 (Chrome 120), Mac (Safari)
+      placeholder: Hệ điều hành và trình duyệt bạn đang dùng
+    validations:
+      required: false

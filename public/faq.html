@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hỏi đáp - UTE-Calendar</title>
+  <meta name="description" content="Các câu hỏi thường gặp khi sử dụng UTE-Calendar">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/ui.css">
+</head>
+<body>
+  <div class="container doc-page">
+    <header class="app-header">
+      <a href="/" class="brand-link" aria-label="Trang chủ UTE-Calendar">
+        <span class="logo-mark"></span>
+        <span class="brand-name">UTE-Calendar</span>
+      </a>
+      <a href="/" class="back-link">Về trang chủ</a>
+    </header>
+
+    <main class="doc-content">
+      <h1 class="page-title">Hỏi đáp</h1>
+      <p class="page-desc">Những thắc mắc thường gặp khi sử dụng UTE-Calendar để đưa lịch học và lịch thi vào điện thoại.</p>
+
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>UTE-Calendar có lưu mật khẩu cổng trường của tôi không?</summary>
+          <div class="faq-answer">
+            <p>Không. Mật khẩu chỉ được dùng một lần để đăng nhập lấy lịch khi bạn mở trang, sau đó bỏ ngay. Máy chủ không có cơ sở dữ liệu lưu mật khẩu.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Lịch trong điện thoại có tự cập nhật khi trường đổi phòng hoặc đổi giờ học không?</summary>
+          <div class="faq-answer">
+            <p>Ứng dụng Lịch trên máy sẽ tự kiểm tra định kỳ (thường từ vài tiếng đến một ngày). Nếu bạn cần cập nhật ngay, chỉ cần mở trang UTE-Calendar và bấm Làm mới.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Tôi nên chọn Cách 1 (Đường dẫn Lịch) hay Cách 2 (Bảng tính tự động)?</summary>
+          <div class="faq-answer">
+            <p>Cách 1 tiện nhất, chỉ cần làm một lần là lịch nằm sẵn trong máy. Cách 2 phù hợp nếu bạn muốn lịch cập nhật liên tục mỗi sáng mà không cần mở lại web.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Làm sao để xoá lịch khi học kỳ kết thúc?</summary>
+          <div class="faq-answer">
+            <p>Trong ứng dụng Lịch của máy, bạn chỉ cần chọn Lịch đã đăng ký và bấm "Huỷ đăng ký" (hoặc Xoá lịch). Mọi buổi học sẽ biến mất ngay.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Tại sao tôi không thấy lịch thi?</summary>
+          <div class="faq-answer">
+            <p>Khi nhà trường công bố lịch thi trên cổng trực tuyến, UTE-Calendar sẽ tự động đưa vào lịch của bạn. Nếu cổng trường chưa có, lịch sẽ chưa hiện.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Tôi gặp lỗi hoặc lịch bị sai, tôi báo cho ai?</summary>
+          <div class="faq-answer">
+            <p>Bạn có thể bấm vào liên kết Báo lỗi ở chân trang để gửi góp ý trên GitHub.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary>Tôi đăng nhập cổng trường bằng Google thì dùng UTE-Calendar thế nào?</summary>
+          <div class="faq-answer">
+            <p>Bạn cần có mật khẩu cổng trường. Mở cổng trường, bấm Quên mật khẩu và đặt mật khẩu một lần. Sau đó đăng nhập UTE-Calendar bằng mã số sinh viên và mật khẩu đó.</p>
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>Giảng viên dùng được không?</summary>
+          <div class="faq-answer">
+            <p>Hiện chưa. UTE-Calendar chỉ đọc được thời khoá biểu và lịch thi của sinh viên.</p>
+          </div>
+        </details>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <div class="footer-links">
+        <a href="/hoi-dap">Hỏi đáp</a> ·
+        <a href="/bao-mat">Bảo mật</a> ·
+        <a href="/dieu-khoan">Điều khoản</a> ·
+        <a href="#" id="bugReportLink" class="bug-report-link">Báo lỗi</a>
+      </div>
+      <div class="footer-disclaimer">
+        UTE-Calendar là dự án cộng đồng, không do Trường ĐH Sư phạm Kỹ thuật TP.HCM vận hành
+      </div>
+    </footer>
+  </div>
+
+  <script src="/static-page.js"></script>
+</body>
+</html>

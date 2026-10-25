@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="UTE-Calendar">
+  <title>UTE-Calendar</title>
+  <rect x="32" y="44" width="192" height="196" rx="64" fill="#F2F0EB"/>
+  <rect x="84" y="22" width="22" height="48" rx="11" fill="#F2F0EB" stroke="#1B1A18" stroke-width="8"/>
+  <rect x="150" y="22" width="22" height="48" rx="11" fill="#F2F0EB" stroke="#1B1A18" stroke-width="8"/>
+  <g transform="translate(-2 4)" fill="none" stroke="#1B1A18" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M56 122V151a17 17 0 0 0 34 0V122M90 151V168"/>
+    <path d="M126 104V154a14 14 0 0 0 14 14H146M114 122H144"/>
+    <path d="M170 145H204A17 23 0 1 0 198 163"/>
+  </g>
+</svg>

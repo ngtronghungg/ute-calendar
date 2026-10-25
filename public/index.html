@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="vi" class="">
+<head class="">
+  <meta charset="UTF-8" class="">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" class="">
+  <meta name="color-scheme" content="dark" class="">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" class="">
+  <link rel="stylesheet" href="/ui.css" class="">
+  <title class="">UTE-Calendar</title>
+  <link rel="stylesheet" href="/ui.css" class="">
+  <link rel="stylesheet" href="/app.css" class="">
+</head>
+<body class="">
+
+  <!-- Top Header Navigation -->
+  <header class="app-header">
+    <a href="/" class="app-brand">
+      <img src="/logo-mark-white.svg" width="28" height="28" alt="" class="">
+      <span class="">UTE-Calendar</span>
+    </a>
+
+    <!-- Segmented Navigation (Only visible when logged in) -->
+    <nav id="mainNav" class="nav-tabs hidden border-bottom-none mb-0">
+      <button data-action="switch-tab" data-tab="schedule" class="tab-btn active">
+        <span class="tab-text"><span class="tab-text-full">Thời khóa biểu</span><span class="tab-text-short">TKB</span></span>
+      </button>
+      <button data-action="switch-tab" data-tab="reminders" class="tab-btn">
+        <span class="tab-text"><span class="tab-text-full">Hộp thư & Nhắc nhở</span><span class="tab-text-short">Hộp thư</span></span>
+        <span id="reminderCountBadge" class="counter-badge">0</span>
+      </button>
+      <button data-action="switch-tab" data-tab="exams" class="tab-btn">
+        <span class="tab-text">Lịch thi</span>
+      </button>
+      <button data-action="switch-tab" data-tab="sync" class="tab-btn">
+        <span class="tab-text">Đồng bộ</span>
+      </button>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <div id="userPill" data-action="confirm-logout" title="Tài khoản" class="user-pill hidden">
+        <span class="user-dot"></span>
+        <span id="userNameDisplay" class="">Sinh viên</span>
+      </div>
+      <button id="logoutBtn" data-action="confirm-logout" title="Đăng xuất" class="btn-secondary hidden btn-sm">
+        Đăng xuất
+      </button>
+    </div>
+  </header>
+
+  <!-- Main View Area -->
+  <main class="app-main container-wide">
+
+    <!-- 1. LOGIN VIEW -->
+    <div id="loginView" class="login-wrapper">
+      <div class="mb-24">
+        <img src="/logo-mark-white.svg" width="48" height="48" alt="" class="mb-16 d-block">
+        <h1 class="page-title">Đăng nhập</h1>
+        <p class="body-text text-muted mt-6">
+          Dùng tài khoản cổng đào tạo HCMUTE. Mật khẩu chỉ dùng một lần để lấy lịch, trang này không lưu.
+        </p>
+      </div>
+
+      <div id="loginError" class="banner banner-error hidden"></div>
+
+      <!-- Mode Switcher -->
+      <div class="login-mode-tabs">
+        <button type="button" id="tabLoginPass" data-action="login-mode" data-mode="pass" class="login-mode-btn active">
+          Tài khoản MSSV
+        </button>
+        <button type="button" id="tabLoginToken" data-action="login-mode" data-mode="token" class="login-mode-btn">
+          Session Token
+        </button>
+      </div>
+
+      <div class="card p-24">
+        <!-- Standard Form -->
+        <form id="formLoginPass"  class="">
+          <div class="form-group">
+            <label for="mssvInput" class="form-label">Mã số sinh viên</label>
+            <input type="text" id="mssvInput" placeholder="MSSV..." required autocomplete="username" class="input-control">
+          </div>
+          <div class="form-group">
+            <label for="passwordInput" class="form-label">Mật khẩu cổng trường</label>
+            <input type="password" id="passwordInput" placeholder="Mật khẩu..." required autocomplete="current-password" class="input-control">
+          </div>
+          <button type="submit" id="loginSubmitBtn" class="btn-primary w-full mt-8">
+            Đăng nhập
+          </button>
+        </form>
+
+        <!-- Token-Only Form -->
+        <form id="formLoginToken"  class="hidden">
+          <div class="notice-callout">
+            Lấy giá trị Token từ LocalStorage của online.hcmute.edu.vn.
+          </div>
+          <div class="form-group">
+            <label for="tokenMssvInput" class="form-label">MSSV (Tùy chọn)</label>
+            <input type="text" id="tokenMssvInput" placeholder="MSSV..." class="input-control">
+          </div>
+          <div class="form-group">
+            <label for="tokenRawInput" class="form-label">Bearer Token</label>
+            <textarea id="tokenRawInput" rows="3" placeholder="eyJhbGciOi..." required class="input-control textarea-token"></textarea>
+          </div>
+          <button type="submit" id="loginTokenSubmitBtn" class="btn-primary w-full mt-8">
+            Đồng bộ bằng Token
+          </button>
+        </form>
+      </div>
+
+      <div class="login-hints">
+        <p class="login-hint-text">Thường đăng nhập cổng trường bằng Google? Bạn cần có mật khẩu cổng trường để dùng UTE-Calendar. Bấm <a href="https://online.hcmute.edu.vn" target="_blank" rel="noopener noreferrer" class="accent-link">Quên mật khẩu ở cổng trường</a> để đặt một lần.</p>
+        <p class="login-hint-text">UTE-Calendar dành cho sinh viên HCMUTE.</p>
+      </div>
+
+      <div class="mt-16 d-flex flex-col items-start gap-10">
+        <button type="button" data-action="enter-guest-sync" class="btn-link text-14">
+          Chỉ muốn lịch tự cập nhật? Xem cách cài
+        </button>
+        <button type="button" data-action="open-security-modal" class="btn-link text-13 text-subtle">
+          Bảo mật và quyền riêng tư
+        </button>
+      </div>
+    </div>
+
+    <!-- GUEST SYNC VIEW (CHẾ ĐỘ KHÁCH) -->
+    <div id="guestSyncView" class="login-wrapper hidden">
+      <div class="mb-24">
+        <button type="button" data-action="exit-guest-sync" class="btn-secondary mb-16">
+          Quay lại đăng nhập
+        </button>
+        <h1 class="page-title">Tự cập nhật</h1>
+        <p class="body-text text-muted mt-6">
+          Cài đặt tự động cập nhật lịch học HCMUTE vào Google Lịch của bạn.
+        </p>
+      </div>
+
+      <div class="card p-24">
+        <div class="d-flex gap-6 mb-12">
+          <span class="tag">Cách 2</span>
+          <span class="tag">Nâng cao</span>
+        </div>
+        <h3 class="card-title mb-8">Tự cập nhật</h3>
+        <p class="body-text mb-8">
+          Thầy cô báo nghỉ, học bù hay đổi phòng, lịch tự đổi theo, kể cả khi bạn không mở trang này. Cần khoảng 3 phút để cài.
+        </p>
+        <p class="text-muted mb-4">
+          Mật khẩu chỉ nằm trong tài khoản Google của bạn. Trang này không lưu.
+        </p>
+        <p class="text-muted mb-16">
+          Lịch nằm trong Google Lịch. Dùng iPhone: thêm tài khoản Google vào ứng dụng Lịch của máy.
+        </p>
+
+        <div class="box-surface-pad">
+          <div class="d-flex flex-col gap-14 text-14">
+            <div class="">
+              <div class="font-500 mb-6">1. Tạo bản sao bảng tính</div>
+              <a id="guestBtnCopySheetLink" href="#" target="_blank" rel="noopener" class="btn-secondary btn-copy-sheet">
+                Tạo bản sao
+              </a>
+            </div>
+            <div class="">
+              <div class="font-500">2. Mở menu UTE-Calendar rồi chọn Bật tự động cập nhật.</div>
+            </div>
+            <div class="">
+              <div class="font-500 mb-4">3. Cho phép Google truy cập</div>
+              <div class="text-muted">Nếu thấy “Google chưa xác minh ứng dụng này”, bấm Nâng cao, chọn Đi tới (không an toàn), rồi Cho phép. Bảng tính này là của riêng bạn.</div>
+            </div>
+            <div class="">
+              <div class="font-500 mb-4">4. Nhập mã số sinh viên và mật khẩu cổng trường.</div>
+              <div class="text-muted">Xong. Bạn có thể đóng bảng tính.</div>
+            </div>
+          </div>
+
+          <details class="border-top-12 text-13">
+            <summary class="cursor-pointer text-main font-500">Vì sao có cảnh báo của Google?</summary>
+            <div class="mt-6 text-muted lh-15">
+              Bảng tính này chưa được Google kiểm duyệt. Mã nguồn công khai, bạn có thể xem trước khi bật.
+            </div>
+          </details>
+
+          <details class="border-top-10 text-13">
+            <summary class="cursor-pointer text-main font-500">Mật khẩu của tôi an toàn không?</summary>
+            <div class="mt-6 text-muted lh-15">
+              Mật khẩu được lưu trong tài khoản Google của bạn, không gửi về trang này. Đừng chia sẻ bảng tính cho người khác. Muốn dừng, mở menu UTE-Calendar và chọn Tắt và xoá mật khẩu.
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. DASHBOARD VIEW -->
+    <div id="dashboardView" class="hidden">
+
+      <!-- Global Notification Banner -->
+      <div id="successBanner" class="banner banner-success hidden"></div>
+      <div id="errorBanner" class="banner banner-error hidden"></div>
+
+      <!-- TAB 1: SCHEDULE (THỜI KHÓA BIỂU) -->
+      <section id="scheduleTab" class="">
+        
+        <!-- Top Toolbar & Semester Selectors -->
+        <div class="dashboard-header">
+          <div class="">
+            <h2 class="section-title">Thời khóa biểu</h2>
+            <p id="semesterSubtitle" class="section-subtitle">Học kỳ hiện tại</p>
+          </div>
+
+          <div class="header-actions flex-wrap">
+            <select id="yearSelect"  class="input-control btn-toolbar"></select>
+            <select id="termSelect"  class="input-control btn-toolbar"></select>
+            <button data-action="add-makeup" title="Thêm lịch học bù" class="btn-secondary btn-compact">
+              Học bù
+            </button>
+            <button data-action="export-ics" data-category="classes" title="Tải file .ics" class="btn-secondary btn-compact">
+              Tải .ics
+            </button>
+            <button data-action="refresh-schedule" class="btn-secondary btn-compact">
+              Làm mới
+            </button>
+          </div>
+        </div>
+
+        <!-- Calendar Navigation Bar -->
+        <div class="calendar-nav-bar">
+          <div class="cal-nav-group">
+            <button data-action="nav-week" data-delta="-1" title="Tuần trước" class="cal-btn">Trước</button>
+            <button data-action="nav-today" title="Trở về tuần này" class="cal-btn today-btn">Hôm nay</button>
+            <button data-action="nav-week" data-delta="1" title="Tuần sau" class="cal-btn">Sau</button>
+            <div id="calWeekDisplayTitle" class="cal-week-display">
+              Lịch học tuần này
+            </div>
+          </div>
+
+          <div class="cal-view-switcher">
+            <button id="btnViewMatrix" data-action="schedule-view" data-view="matrix" class="cal-view-btn active">Lưới tuần</button>
+            <button id="btnViewDay" data-action="schedule-view" data-view="day" class="cal-view-btn">Theo ngày</button>
+            <button id="btnViewList" data-action="schedule-view" data-view="list" class="cal-view-btn">Danh sách</button>
+          </div>
+        </div>
+
+        <!-- Mobile Day Selector Strip -->
+        <div id="mobileDayStrip" class="mobile-day-strip"></div>
+
+        <!-- 1. VIEW MODE: MATRIX -->
+        <div id="scheduleMatrixView" class="schedule-matrix-container"></div>
+
+        <!-- 2. VIEW MODE: DAY -->
+        <div id="scheduleDayView" class="schedule-day-container hidden"></div>
+
+        <!-- 3. VIEW MODE: LIST -->
+        <div id="scheduleListView" class="hidden">
+          <div class="d-flex justify-end mb-12">
+            <label class="checkbox-label">
+              <input type="checkbox" id="onlyUpcomingScheduleToggle"  class="accent-check">
+              <span id="scheduleToggleLabel" class="">Chỉ hiện sắp tới</span>
+            </label>
+          </div>
+          <div id="scheduleGrid" class="schedule-grid"></div>
+        </div>
+
+      </section>
+
+      <!-- TAB 2: REMINDERS (HỘP THƯ HỌC VỤ) -->
+      <section id="remindersTab" class="hidden">
+        <div class="dashboard-header">
+          <div class="">
+            <h2 class="section-title">Hộp thư & Nhắc nhở</h2>
+            <p class="section-subtitle">Thông báo học phí, lịch thi và hộp thư cá nhân</p>
+          </div>
+          <div class="header-actions">
+            <button data-action="refresh-notices" class="btn-secondary btn-compact">
+              Quét lại thông báo
+            </button>
+          </div>
+        </div>
+
+        <div class="toolbar-row">
+          <div class="d-flex gap-6 flex-wrap">
+            <button id="chipAll" data-action="notice-filter" data-filter="all" class="filter-chip active">Tất cả <span id="badgeAll" class="">0</span></button>
+            <button id="chipPersonal" data-action="notice-filter" data-filter="personal" class="filter-chip">Cá nhân <span id="badgePersonal" class="">0</span></button>
+            <button id="chipExam" data-action="notice-filter" data-filter="exam" class="filter-chip">Lịch thi <span id="badgeExam" class="">0</span></button>
+            <button id="chipTuition" data-action="notice-filter" data-filter="tuition" class="filter-chip">Học phí <span id="badgeTuition" class="">0</span></button>
+            <button id="chipGeneral" data-action="notice-filter" data-filter="general" class="filter-chip">Chung <span id="badgeGeneral" class="">0</span></button>
+          </div>
+          <div class="search-input-box">
+            <input type="text" id="noticeSearchInput" placeholder="Tìm kiếm thông báo..."  class="input-control input-compact">
+          </div>
+        </div>
+
+        <div class="hidden"><span id="countPersonalNotices" class=""></span><span id="countExamNotices" class=""></span><span id="countGeneralNotices" class=""></span></div>
+        <div id="remindersList" class="reminders-list"></div>
+
+        <div id="remindersActionBar" class="actions-bar border-top-row">
+          <span id="selectedReminderCountText" class="text-13 text-muted">
+            Đã chọn 0 nhắc nhở
+          </span>
+          <div class="d-flex gap-8">
+            <button data-action="download-selected-ics" class="btn-secondary btn-compact">
+              Tải .ics
+            </button>
+            <button data-action="sync-selected-google" class="btn-primary btn-compact-14">
+              Thêm vào Google Calendar
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: EXAMS (LỊCH THI) -->
+      <section id="examsTab" class="hidden">
+        <div class="dashboard-header">
+          <div class="">
+            <h2 class="section-title">Lịch thi</h2>
+            <p id="examsSubtitle" class="section-subtitle">Lịch thi kết thúc học phần</p>
+          </div>
+          <div class="header-actions">
+            <label class="checkbox-label">
+              <input type="checkbox" id="onlyUpcomingExamsToggle" checked  class="accent-check">
+              <span id="examsToggleLabel" class="">Chỉ môn sắp thi</span>
+            </label>
+            <button data-action="export-ics" data-category="exams" class="btn-secondary btn-compact">
+              Tải .ics
+            </button>
+          </div>
+        </div>
+        <div id="examCountdownHero" class="exam-countdown-hero hidden"></div>
+        <div id="examsGrid" class="schedule-grid"></div>
+      </section>
+
+      <!-- TAB 4: SYNC (ĐỒNG BỘ) -->
+      <section id="syncTab" class="hidden sync-container">
+        <div class="mb-24">
+          <h1 class="page-title">Đưa lịch học vào điện thoại</h1>
+          <p class="body-text text-muted mt-6">Chọn một cách. Cả hai chỉ cần cài một lần.</p>
+        </div>
+
+        <div class="d-flex flex-col gap-20 mb-24">
+          
+          <!-- Thẻ 1 — Cách 1, Khuyên dùng: Thêm lịch vào máy -->
+          <div id="cardPrimarySync" class="card p-24">
+            <div class="d-flex gap-6 mb-12">
+              <span class="tag">Cách 1</span>
+              <span class="tag">Khuyên dùng</span>
+            </div>
+            <h3 class="card-title mb-8">Thêm lịch vào máy</h3>
+            <p class="body-text text-muted mb-16">
+              Bấm nút, ứng dụng Lịch sẽ hỏi bạn có muốn thêm không.
+            </p>
+
+            <!-- Hai nút Apple / Google cùng hiển thị -->
+            <div class="sync-actions">
+              <button type="button" id="btnAppleCal" data-action="apple-cal" class="btn-primary sync-device-btn">
+                <span class="">Thêm vào Apple Lịch</span>
+                <span class="sub-text">iPhone, iPad, Mac</span>
+              </button>
+              <button type="button" id="btnGoogleCal" data-action="google-cal" class="btn-secondary sync-device-btn">
+                <span class="">Thêm vào Google Lịch</span>
+                <span class="sub-text">Android, máy tính</span>
+              </button>
+            </div>
+
+            <!-- Legacy button placeholder for backwards compat -->
+            <button type="button" id="btnDeviceSync" data-action="main-sync" class="hidden"></button>
+
+            <!-- Liên kết nhỏ Dùng ứng dụng Lịch khác -->
+            <div class="mt-8">
+              <button type="button" id="btnToggleOtherCal" data-action="toggle-other-cal" class="btn-link">
+                Dùng ứng dụng Lịch khác
+              </button>
+            </div>
+
+            <!-- Hộp nhỏ chứa đường dẫn và nút Sao chép liên kết -->
+            <div id="otherCalendarBox" class="hidden box-callout">
+              <div class="d-flex gap-8 flex-wrap">
+                <input type="text" id="customLiveUrlInput" readonly class="input-control live-url-input/>
+                <button type="button" data-action="copy-live-feed" class="btn-secondary h-40 text-13">
+                  Sao chép liên kết
+                </button>
+              </div>
+            </div>
+
+            <!-- Ghi chú Card 1 -->
+            <div class="mt-20 d-flex flex-col gap-6">
+              <p class="text-muted">Thêm xong, bạn không cần mở lại trang này.</p>
+              <p class="text-muted">Đây là lịch hiện tại. Khi thầy cô đổi lịch, lịch này không tự đổi. Muốn lịch tự đổi, dùng Cách 2.</p>
+              <p class="text-muted">Google Lịch có thể mất vài giờ để hiện thay đổi mới.</p>
+            </div>
+
+            <!-- Accordion Tuỳ chỉnh (D2) -->
+            <details class="options-accordion" id="optionsAccordion">
+              <summary class="options-summary">
+                <span class="options-summary-title">Tuỳ chỉnh</span>
+                <span id="optSavedIndicator" class="saved-indicator hidden">Đã lưu</span>
+                <span class="options-chevron"></span>
+              </summary>
+              <div class="options-content">
+                <!-- Hàng 1: Thời gian báo trước -->
+                <div class="option-row">
+                  <label for="optReminderMin" class="option-label">Thời gian báo trước</label>
+                  <select id="optReminderMin" class="option-select">
+                    <option value="0">Không nhắc</option>
+                    <option value="10">10 phút</option>
+                    <option value="15">15 phút</option>
+                    <option value="20" selected>20 phút</option>
+                    <option value="30">30 phút</option>
+                    <option value="60">1 tiếng</option>
+                  </select>
+                </div>
+
+                <!-- Hàng 2: Tên buổi học -->
+                <div class="option-row">
+                  <span class="option-label">Tên buổi học</span>
+                  <div class="segmented-control" id="segTitleStyle">
+                    <button type="button" class="segmented-btn active" data-style="name" id="btnStyleName">Tên môn</button>
+                    <button type="button" class="segmented-btn" data-style="code_name" id="btnStyleCodeName">Mã + Tên</button>
+                  </div>
+                </div>
+
+                <!-- Hàng 3: Tách riêng lịch học và lịch thi -->
+                <div class="option-row">
+                  <span class="option-label">Tách riêng lịch học và lịch thi</span>
+                  <label class="switch-control">
+                    <input type="checkbox" id="optSplit">
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                <!-- Hàng 4: Đưa hạn chót từ thông báo vào lịch -->
+                <div class="option-row">
+                  <span class="option-label">Đưa hạn chót từ thông báo vào lịch</span>
+                  <label class="switch-control">
+                    <input type="checkbox" id="optDeadlines">
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </details>
+
+
+            <!-- Dòng cuối thẻ: Lấy lúc ... & Lấy lại lịch mới -->
+            <div class="sync-card-footer">
+              <span id="syncLastUpdatedLabel" class="">Chưa có thông tin</span>
+              <button type="button" id="btnManualRefresh" data-action="refresh-school" class="btn-link text-muted">
+                Lấy lại lịch mới
+              </button>
+            </div>
+          </div>
+
+            <!-- Khối thêm các lịch còn lại khi bật tách riêng hoặc hạn chót -->
+            <div id="secondaryCalendarsBox" class="secondary-cals-box hidden">
+              <div class="secondary-cals-title">Thêm các lịch còn lại</div>
+              <div id="secondaryCalendarsList" class="secondary-cals-list"></div>
+            </div>
+
+
+          <!-- Thẻ 2 — Cách 2, Nâng cao: Tự cập nhật -->
+          <div id="cardAutoSync" class="card p-24">
+            <div class="d-flex gap-6 mb-12">
+              <span class="tag">Cách 2</span>
+              <span class="tag">Nâng cao</span>
+            </div>
+            <h3 class="card-title mb-8">Tự cập nhật</h3>
+            <p class="body-text mb-8">
+              Thầy cô báo nghỉ, học bù hay đổi phòng, lịch tự đổi theo, kể cả khi bạn không mở trang này. Cần khoảng 3 phút để cài.
+            </p>
+            <p class="text-muted mb-4">
+              Mật khẩu chỉ nằm trong tài khoản Google của bạn. Trang này không lưu.
+            </p>
+            <p class="text-muted mb-16">
+              Lịch nằm trong Google Lịch. Dùng iPhone: thêm tài khoản Google vào ứng dụng Lịch của máy.
+            </p>
+
+            <div id="autoSyncPrepNotice" class="text-muted hidden mb-12">Tính năng này đang được chuẩn bị.</div>
+
+            <button type="button" id="btnToggleAutoGuide" data-action="toggle-auto-guide" class="btn-secondary h-40">
+              Xem cách cài
+            </button>
+
+            <!-- Khung hướng dẫn 4 bước -->
+            <div id="autoSyncGuideBox" class="hidden box-surface-pad">
+              <div class="d-flex flex-col gap-14 text-14">
+                <div class="">
+                  <div class="font-500 mb-6">1. Tạo bản sao bảng tính</div>
+                  <a id="btnCopySheetLink" href="#" target="_blank" rel="noopener" class="btn-secondary btn-copy-sheet">
+                    Tạo bản sao
+                  </a>
+                </div>
+                <div class="">
+                  <div class="font-500">2. Mở menu UTE-Calendar rồi chọn Bật tự động cập nhật.</div>
+                </div>
+                <div class="">
+                  <div class="font-500 mb-4">3. Cho phép Google truy cập</div>
+                  <div class="text-muted">Nếu thấy “Google chưa xác minh ứng dụng này”, bấm Nâng cao, chọn Đi tới (không an toàn), rồi Cho phép. Bảng tính này là của riêng bạn.</div>
+                </div>
+                <div class="">
+                  <div class="font-500 mb-4">4. Nhập mã số sinh viên và mật khẩu cổng trường.</div>
+                  <div class="text-muted">Xong. Bạn có thể đóng bảng tính.</div>
+                </div>
+              </div>
+
+              <details class="border-top-12 text-13">
+                <summary class="cursor-pointer text-main font-500">Vì sao có cảnh báo của Google?</summary>
+                <div class="mt-6 text-muted lh-15">
+                  Bảng tính này chưa được Google kiểm duyệt. Mã nguồn công khai, bạn có thể xem trước khi bật.
+                </div>
+              </details>
+
+              <details class="border-top-10 text-13">
+                <summary class="cursor-pointer text-main font-500">Mật khẩu của tôi an toàn không?</summary>
+                <div class="mt-6 text-muted lh-15">
+                  Mật khẩu được lưu trong tài khoản Google của bạn, không gửi về trang này. Đừng chia sẻ bảng tính cho người khác. Muốn dừng, mở menu UTE-Calendar và chọn Tắt và xoá mật khẩu.
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <!-- Bottom recommendation line -->
+          <p class="text-muted m-4-12">
+            Nên chọn cách nào? Chỉ cần có lịch trong máy thì chọn Cách 1. Muốn lịch tự đổi khi có báo nghỉ thì chọn Cách 2.
+          </p>
+
+          <!-- Thẻ Cài đặt liên kết & tài khoản -->
+          <div class="card p-20">
+            <h3 class="card-title mb-12">Cài đặt liên kết</h3>
+            <div class="d-flex gap-8 flex-wrap mb-16">
+              <button type="button" data-action="regen-token" class="btn-secondary">
+                Tạo lại liên kết
+              </button>
+              <button type="button" data-action="wipe-data" class="btn-danger">
+                Xoá dữ liệu của tôi
+              </button>
+            </div>
+            <div class="user-card-footer">
+              <div class="">
+                <div id="syncUserFullTitle" class="font-500 text-14 text-main">Tài khoản sinh viên</div>
+                <div id="syncUserMssvSubtitle" class="text-12 text-muted mt-2">Phiên làm việc hiện tại</div>
+              </div>
+              <button type="button" data-action="confirm-logout" class="btn-secondary btn-sm">
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden checkbox elements for JS compatibility -->
+        <div class="hidden">
+          <input type="checkbox" id="syncOptClasses" checked class="">
+          <input type="checkbox" id="syncOptExams" checked class="">
+          <input type="checkbox" id="syncOptReminders" class="">
+          <div id="tgConfigFields" class=""></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Minimalist Footer -->
+    <footer class="site-footer">
+        <div class="footer-links">
+          <a href="/hoi-dap" class="footer-link">Hỏi đáp</a> ·
+          <a href="/bao-mat" class="footer-link">Bảo mật</a> ·
+          <a href="/dieu-khoan" class="footer-link">Điều khoản</a> ·
+          <a href="#" id="bugReportLink" class="footer-link bug-report-link">Báo lỗi</a>
+        </div>
+        <div class="footer-disclaimer">
+          UTE-Calendar là dự án cộng đồng, không do Trường ĐH Sư phạm Kỹ thuật TP.HCM vận hành
+        </div>
+      </footer>
+
+  </main>
+
+  <!-- Notice Reader Modal -->
+  <div id="noticeDetailModal" data-action="close-modal" data-modal="noticeDetailModal" class="modal-overlay">
+    <div  class="modal-card">
+      <div class="modal-header">
+        <div class="">
+          <h3 id="modalNoticeTitle" class="modal-title">Chi tiết thông báo</h3>
+          <div id="modalNoticeMeta" class="modal-meta">Thông báo portal</div>
+        </div>
+        <button data-action="close-modal" data-modal="noticeDetailModal" title="Đóng" class="btn-icon">&times;</button>
+      </div>
+      <div id="modalNoticeBody" class="modal-body text-14 lh-16 text-main mb-20">
+        Đang tải...
+      </div>
+      <div class="d-flex justify-end">
+        <button data-action="close-modal" data-modal="noticeDetailModal" class="btn-secondary">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy & Security Modal -->
+  <div id="securityModal" data-action="close-modal" data-modal="securityModal" class="modal-overlay">
+    <div  class="modal-card">
+      <div class="modal-header">
+        <div class="">
+          <h3 class="modal-title">Bảo mật & Quyền riêng tư</h3>
+          <div class="modal-meta">Thông tin xử lý dữ liệu</div>
+        </div>
+        <button data-action="close-modal" data-modal="securityModal" title="Đóng" class="btn-icon">&times;</button>
+      </div>
+      
+      <div class="modal-body text-13 lh-16">
+        <div class="grid-2col mb-16">
+          <div class="stat-box">
+            <div class="text-muted text-12">Mật khẩu</div>
+            <div class="text-ok font-500 mt-2">Không lưu trữ</div>
+          </div>
+          <div class="stat-box">
+            <div class="text-muted text-12">Dữ liệu lịch</div>
+            <div class="text-ok font-500 mt-2">Cách ly theo MSSV</div>
+          </div>
+        </div>
+
+        <p class="text-muted text-13 mb-16 lh-15">
+          Mật khẩu chỉ dùng để xác thực phiên trực tiếp với máy chủ HCMUTE. Khi đăng xuất, toàn bộ dữ liệu phiên trên máy chủ được xóa bỏ.
+        </p>
+
+        <div class="d-flex justify-end gap-8">
+          <button data-action="wipe-data" class="btn-secondary">
+            Xóa dữ liệu của tôi
+          </button>
+          <button data-action="close-modal" data-modal="securityModal" class="btn-primary">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Profile & Logout Modal -->
+  <div id="userProfileModal" data-action="close-modal" data-modal="userProfileModal" class="modal-overlay">
+    <div  class="modal-card max-w-400">
+      <div class="modal-header">
+        <div class="">
+          <h3 class="modal-title">Tài khoản sinh viên</h3>
+          <div id="modalUserRole" class="modal-meta">Sinh viên HCMUTE</div>
+        </div>
+        <button data-action="close-modal" data-modal="userProfileModal" title="Đóng" class="btn-icon">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-16">
+          <div id="modalUserName" class="font-500 text-16 text-main">Đang tải...</div>
+          <div id="modalUserMssv" class="text-13 text-muted mt-2">MSSV: ...</div>
+          <div id="modalUserStatus" class="hidden">Đang học</div>
+        </div>
+        <div class="d-flex flex-col gap-8">
+          <button data-action="execute-logout" class="btn-danger w-full">
+            Đăng xuất khỏi thiết bị này
+          </button>
+          <button data-action="close-modal" data-modal="userProfileModal" class="btn-secondary w-full">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Class Detail Modal -->
+  <div id="classDetailModal" data-action="close-modal" data-modal="classDetailModal" class="modal-overlay">
+    <div  class="modal-card max-w-440">
+      <div class="modal-header">
+        <div class="d-flex items-center gap-8">
+          <div id="modalClassColorDot" class="course-dot"></div>
+          <div class="">
+            <h3 id="modalClassTitle" class="modal-title">Tên môn học</h3>
+            <div id="modalClassCode" class="modal-meta">Môn học</div>
+          </div>
+        </div>
+        <button data-action="close-modal" data-modal="classDetailModal" title="Đóng" class="btn-icon">&times;</button>
+      </div>
+
+      <div class="modal-body d-flex flex-col gap-12">
+        <div class="profile-details-box">
+          <div class="d-flex justify-between">
+            <span class="text-muted">Ngày học:</span>
+            <span id="modalClassDayStr" class="text-main font-500">Thứ Hai, 20/10/2026</span>
+          </div>
+          <div class="d-flex justify-between">
+            <span class="text-muted">Thời gian:</span>
+            <span id="modalClassTimeStr" class="text-main tabular-nums">07:30 - 11:30</span>
+          </div>
+          <div class="d-flex justify-between">
+            <span class="text-muted">Phòng học:</span>
+            <span id="modalClassRoom" class="text-main font-500">A1-205</span>
+          </div>
+          <div class="d-flex justify-between gap-8">
+            <span class="text-muted">Cơ sở:</span>
+            <span id="modalClassLocation" class="text-main">Cơ sở chính</span>
+          </div>
+        </div>
+
+        <div id="modalClassDescBox" class="profile-bio-box"></div>
+
+        <div id="modalClassStatusAlert" class="banner hidden"></div>
+
+        <div class="d-flex gap-8 mt-4">
+          <button id="modalClassCancelBtn" class="btn-secondary flex-1">
+            Đánh dấu giảng viên cho nghỉ
+          </button>
+          <button data-action="close-modal" data-modal="classDetailModal" class="btn-primary">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/vendor/purify.min.js" class=""></script>
+  <script src="/app.js" class=""></script>
+
+</body>
+</html>
