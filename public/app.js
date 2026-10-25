@@ -693,8 +693,8 @@ let appState = {
 
       // 3 Sessions per day
       const sessions = [
-        { id: 'morning', name: 'Buổi Sáng', period: 'Tiết 1 – 6', time: '07:00 – 11:30' },
-        { id: 'afternoon', name: 'Buổi Chiều', period: 'Tiết 7 – 12', time: '12:30 – 17:30' },
+        { id: 'morning', name: 'Buổi Sáng', period: 'Tiết 1 – 6', time: '07:30 – 12:15' },
+        { id: 'afternoon', name: 'Buổi Chiều', period: 'Tiết 7 – 12', time: '12:45 – 17:30' },
         { id: 'evening', name: 'Buổi Tối', period: 'Tiết 13 – 16', time: '18:00 – 21:00' },
       ];
 
@@ -799,8 +799,8 @@ let appState = {
 
       const dayNames = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật'];
       const sessions = [
-        { id: 'morning', name: 'Buổi Sáng', time: '07:00 – 11:30' },
-        { id: 'afternoon', name: 'Buổi Chiều', time: '12:30 – 17:30' },
+        { id: 'morning', name: 'Buổi Sáng', time: '07:30 – 12:15' },
+        { id: 'afternoon', name: 'Buổi Chiều', time: '12:45 – 17:30' },
         { id: 'evening', name: 'Buổi Tối', time: '18:00 – 21:00' },
       ];
 
