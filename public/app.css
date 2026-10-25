@@ -913,3 +913,7 @@ body { padding-bottom: env(safe-area-inset-bottom); }
   .app-footer { padding: 24px 16px calc(24px + env(safe-area-inset-bottom)); text-align: left; }
   .app-footer a { display: inline-block; padding: 8px 0; margin: 0 8px 0 0; }
 }
+@media (max-width: 480px) {
+  /* Man hinh hep: chi giu thuong hieu va nut Dang xuat tren mot hang */
+  .app-header .user-pill { display: none; }
+}
