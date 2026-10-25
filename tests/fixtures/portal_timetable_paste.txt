@@ -1,0 +1,20 @@
+STT	Mã lớp học phần/Tên lớp học phần	Số TC	Mã lớp học phần	Thứ	Tiết(giờ) bắt đầu	Phòng học	Tuần	Cơ sở	Địa chỉ
+1	MDPR310423_31-Đồ án thiết kế máy-Giảng Viên A (Email: gva@hcmute.edu.vn)	1	241443A						
+2	METE230130_06-Công nghệ kim loại-Giảng Viên B (Email: gvb@hcmute.edu.vn)	3	25104A, 25104B, 25104C	Thứ Hai	1 (07g30)	A108	02/11/2026->28/12/2026)	Cơ sở chính	ĐH SPKT TpHCM
+3	EPHE214429_09-Thí nghiệm kỹ thuật thủy lực và khí nén-Giảng Viên C (Email: gvc@hcmute.edu.vn)	1	241442C	Thứ Hai	7 (12g45)	CNC1	17/08/2026->21/09/2026)	Cơ sở chính	ĐH SPKT TpHCM
+4	HYPN221129_07-Kỹ thuật thủy lực - khí nén-Giảng Viên D (Email: gvd@hcmute.edu.vn)	2	23138A, 23138B	Thứ Ba	1 (07g30)	A206	22/12/2026->22/12/2026)	Cơ sở chính	ĐH SPKT TpHCM
+Thứ Ba	1 (07g30)	A206	03/11/2026->15/12/2026)	Cơ sở chính	ĐH SPKT TpHCM
+5	PCCC322725_07-Thực tập CAD/CAM-CNC cơ bản-Giảng Viên E (Email: gve@hcmute.edu.vn)	2	241442C	Thứ Ba	1 (07g30)	02CNC3	06/10/2026->06/10/2026)	Cơ sở chính	ĐH SPKT TpHCM
+Thứ Ba	1 (07g30)	02CNC3	18/08/2026->29/09/2026)	Cơ sở chính	ĐH SPKT TpHCM
+6	LLCT220514_46-Lịch sử Đảng CSVN-Giảng Viên F (Email: gvf@hcmute.edu.vn)	2		Thứ Ba	7 (12g45)	B302	22/12/2026->22/12/2026)	Cơ sở chính	ĐH SPKT TpHCM
+Thứ Ba	7 (12g45)	B302	03/11/2026->15/12/2026)	Cơ sở chính	ĐH SPKT TpHCM
+7	ACAE321024_01-Ứng dụng CAE trong thiết kế-Giảng Viên G (Email: gvg@hcmute.edu.vn)	2	241441A, 241441B, 241441C	Thứ Tư	1 (07g30)	E1-503	19/08/2026->07/10/2026)	Cơ sở chính	ĐH SPKT TpHCM
+Thứ Tư	5 (10g45)	E1-503	07/10/2026->07/10/2026)	Cơ sở chính	ĐH SPKT TpHCM
+8	MTNC340925_06-Máy và hệ thống điều khiển số-Giảng Viên H (Email: gvh@hcmute.edu.vn)	4	241442A, 241442B, 241442C	Thứ Tư	7 (12g45)	A107	19/08/2026->07/10/2026)	Cơ sở chính	ĐH SPKT TpHCM
+Thứ Sáu	1 (07g30)	A107	21/08/2026->16/10/2026)	Cơ sở chính	ĐH SPKT TpHCM
+Thứ Bảy	7 (12g45)	E1-504	17/10/2026->17/10/2026)	Cơ sở chính	ĐH SPKT TpHCM
+9	EEEI321925_04-Trang bị điện-điện tử trong máy công nghiệp-Giảng Viên I (Email: gvi@hcmute.edu.vn)	2	241442A, 241442B, 241442C	Thứ Sáu	7 (12g45)	A4-401	09/10/2026->09/10/2026)	Cơ sở chính	ĐH SPKT TpHCM
+Thứ Sáu	7 (12g45)	A107	28/08/2026->28/08/2026)	Cơ sở chính	ĐH SPKT TpHCM
+Thứ Sáu	7 (12g45)	A4-401	04/09/2026->02/10/2026)	Cơ sở chính	ĐH SPKT TpHCM
+Thứ Sáu	7 (12g45)	A4-402	16/10/2026->16/10/2026)	Cơ sở chính	ĐH SPKT TpHCM
+10	MMAT334325_01-Công nghệ chế tạo máy-Giảng Viên J (Email: gvj@hcmute.edu.vn)	3	Moi mo	Thứ Bảy	1 (07g30)	E1-404	22/08/2026->17/10/2026)	Cơ sở chính	ĐH SPKT TpHCM

@@ -1,0 +1,19 @@
+.paste-steps { margin: 20px 0 24px; padding-left: 20px; display: grid; gap: 8px; line-height: 1.6; }
+.paste-input { width: 100%; min-height: 160px; resize: vertical; font-family: inherit; font-size: 14px; line-height: 1.5; box-sizing: border-box; }
+.paste-heading { font-size: 18px; margin: 28px 0 8px; }
+.paste-note { font-size: 13px; line-height: 1.6; margin: 8px 0 16px; }
+.paste-courses { display: grid; gap: 8px; margin-bottom: 16px; }
+.paste-course { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; align-items: center; padding: 12px 14px; border: 1px solid var(--border, rgba(255, 255, 255, 0.12)); border-radius: 10px; }
+.paste-course-name { font-weight: 600; font-size: 15px; }
+.paste-course-meta { grid-column: 1; font-size: 13px; line-height: 1.5; opacity: 0.75; }
+.paste-periods { grid-column: 2; grid-row: 1 / span 2; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.paste-periods input { width: 56px; text-align: center; }
+.paste-trade { font-size: 14px; line-height: 1.6; margin: -4px 0 20px; opacity: 0.75; }
+.paste-next { font-size: 14px; line-height: 1.6; margin: 0 0 12px; }
+.paste-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
+.paste-actions .btn-primary, .paste-actions .btn-secondary { width: auto; }
+@media (max-width: 520px) {
+  .paste-course { grid-template-columns: 1fr; }
+  .paste-periods { grid-column: 1; grid-row: auto; }
+  .paste-actions .btn-primary, .paste-actions .btn-secondary { width: 100%; }
+}

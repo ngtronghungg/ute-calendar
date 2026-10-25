@@ -392,6 +392,11 @@ def faq_page():
     return send_from_directory(WEB_DIR, "faq.html", max_age=0)
 
 
+@app.route("/dan-lich")
+def paste_page():
+    return send_from_directory(WEB_DIR, "dan-lich.html", max_age=0)
+
+
 @app.route("/bao-mat")
 @app.route("/security")
 def security_page():
@@ -439,29 +444,67 @@ def _get_login_rate_limit_keys(client_ip: str, mssv: Optional[str]) -> tuple[str
     return ip_key, mssv_key
 
 
-def _is_login_rate_limited(ip_key: str, mssv_key: Optional[str]) -> bool:
-    ip_attempts = storage.get_json(ip_key, default=0)
+LOGIN_FREE_ATTEMPTS = 2        # the 3rd wrong password starts the lock
+LOGIN_FIRST_LOCK_SEC = 15
+LOGIN_MAX_LOCK_SEC = 300       # never lock for more than 5 minutes
+LOGIN_FAIL_WINDOW_SEC = 1800   # failures are forgotten after 30 minutes
+# Many students share the campus Wi-Fi address, so the per-IP limit is only a coarse backstop.
+LOGIN_IP_MAX_FAILURES = 30
+
+
+def _login_lock_seconds(failures: int) -> int:
+    """Wrong password #3 -> 15s, then 30s, 60s, 120s, 240s, capped at 5 minutes."""
+    if failures <= LOGIN_FREE_ATTEMPTS:
+        return 0
+    return min(LOGIN_MAX_LOCK_SEC, LOGIN_FIRST_LOCK_SEC * 2 ** (failures - LOGIN_FREE_ATTEMPTS - 1))
+
+
+def _login_lock_key(mssv_key: str) -> str:
+    return mssv_key.replace("rl:login:mssv:", "rl:login:lock:", 1)
+
+
+def _login_retry_after(ip_key: str, mssv_key: Optional[str]) -> int:
+    """Seconds the caller must still wait before another login attempt (0 = allowed)."""
     try:
-        if int(ip_attempts or 0) >= 5:
-            return True
+        if int(storage.get_json(ip_key, default=0) or 0) >= LOGIN_IP_MAX_FAILURES:
+            return LOGIN_MAX_LOCK_SEC
     except (ValueError, TypeError):
         pass
-
     if mssv_key:
-        mssv_attempts = storage.get_json(mssv_key, default=0)
+        until = storage.get_json(_login_lock_key(mssv_key), default=0)
         try:
-            if int(mssv_attempts or 0) >= 5:
-                return True
+            return max(0, int(float(until or 0) - time.time() + 0.999))
         except (ValueError, TypeError):
             pass
+    return 0
 
-    return False
 
-
-def _record_failed_login(ip_key: str, mssv_key: Optional[str]):
+def _record_failed_login(ip_key: str, mssv_key: Optional[str]) -> int:
+    """Count a failure and return the lock (seconds) it triggered, 0 if none yet."""
     storage.incr_with_ttl(ip_key, ttl=600)
-    if mssv_key:
-        storage.incr_with_ttl(mssv_key, ttl=600)
+    if not mssv_key:
+        return 0
+    failures = storage.incr_with_ttl(mssv_key, ttl=LOGIN_FAIL_WINDOW_SEC)
+    seconds = _login_lock_seconds(failures)
+    if seconds:
+        storage.set_json(_login_lock_key(mssv_key), time.time() + seconds, ttl=seconds + 5)
+    return seconds
+
+
+def _login_lock_message(seconds: int) -> str:
+    wait = f"{seconds} giây" if seconds < 60 else f"{-(-seconds // 60)} phút"
+    return f"Quá tam ba bận nha bạn! Nghỉ tay chút rồi thử lại sau {wait}."
+
+
+def _login_failure_response(message: str, ip_key: str, mssv_key: Optional[str], status: int = 400):
+    seconds = _record_failed_login(ip_key, mssv_key)
+    body = {"success": False, "message": message}
+    if seconds:
+        body["message"] = f"{message} {_login_lock_message(seconds)}"
+        body["retry_after"] = seconds
+    return jsonify(body), status
+
+
 @app.route("/api/login", methods=["POST"])
 def api_login():
     """
@@ -479,8 +522,11 @@ def api_login():
     password = data.get("password", "").strip()
 
     ip_key, mssv_key = _get_login_rate_limit_keys(client_ip, username)
-    if _is_login_rate_limited(ip_key, mssv_key):
-        return jsonify({"success": False, "message": "Bạn thử đăng nhập quá nhiều lần. Hãy thử lại sau 10 phút."}), 429
+    retry_after = _login_retry_after(ip_key, mssv_key)
+    if retry_after:
+        resp = jsonify({"success": False, "message": _login_lock_message(retry_after), "retry_after": retry_after})
+        resp.headers["Retry-After"] = str(retry_after)
+        return resp, 429
 
     client = make_portal_client()
 
@@ -489,18 +535,15 @@ def api_login():
     if token_input:
         jwt_info = extract_jwt_identity(token_input)
         if not jwt_info:
-            _record_failed_login(ip_key, mssv_key)
-            return jsonify({
-                "success": False,
-                "message": "Không thể xác thực danh tính sinh viên từ mã token này. Vui lòng đăng nhập bằng MSSV và Mật khẩu."
-            }), 400
+            return _login_failure_response(
+                "Không thể xác thực danh tính sinh viên từ mã token này. Vui lòng đăng nhập bằng MSSV và Mật khẩu.",
+                ip_key, mssv_key)
 
         client.token = token_input
         try:
             yt = client.get_year_and_term()
         except Exception as e:
-            _record_failed_login(ip_key, mssv_key)
-            return jsonify({"success": False, "message": f"Token không hợp lệ hoặc đã hết hạn: {e}"}), 400
+            return _login_failure_response(f"Token không hợp lệ hoặc đã hết hạn: {e}", ip_key, mssv_key)
 
         mssv = jwt_info["Id"]
         name = jwt_info["FullName"]
@@ -565,12 +608,11 @@ def api_login():
 
     # Option 2: Standard MSSV + Password (Ephemeral, never stored)
     if not username or not password:
-        _record_failed_login(ip_key, mssv_key)
-        return jsonify({"success": False, "message": "Vui lòng nhập MSSV và Mật khẩu."}), 400
+        return _login_failure_response("Vui lòng nhập MSSV và Mật khẩu.", ip_key, mssv_key)
 
     if not validate_mssv(username):
-        _record_failed_login(ip_key, mssv_key)
-        return jsonify({"success": False, "message": "Mã số sinh viên không hợp lệ (yêu cầu từ 5 đến 15 ký tự chữ và số)."}), 400
+        return _login_failure_response(
+            "Mã số sinh viên không hợp lệ (yêu cầu từ 5 đến 15 ký tự chữ và số).", ip_key, mssv_key)
 
     try:
         profile = client.login(username, password)
@@ -578,6 +620,9 @@ def api_login():
         del password
         del data
 
+        if mssv_key:
+            storage.delete(mssv_key)
+            storage.delete(_login_lock_key(mssv_key))
         session_token = secrets.token_urlsafe(32)
         mssv = str(profile.get("Id") or username).strip()
         if not validate_mssv(mssv):
@@ -626,13 +671,12 @@ def api_login():
         set_session_cookie(resp, session_token, max_age=ttl_sec)
         return resp
     except Exception as e:
-        _record_failed_login(ip_key, mssv_key)
         try:
             del password
             del data
         except Exception:
             pass
-        return jsonify({"success": False, "message": str(e)}), 400
+        return _login_failure_response(str(e), ip_key, mssv_key)
 
 
 

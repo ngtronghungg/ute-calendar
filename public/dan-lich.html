@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dán thời khóa biểu - UTE-Calendar</title>
+  <meta name="description" content="Tạo file lịch từ thời khóa biểu đã sao chép từ cổng trường, không cần nhập mật khẩu">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/ui.css">
+  <link rel="stylesheet" href="/paste.css">
+</head>
+<body>
+  <div class="container doc-page">
+    <header class="app-header">
+      <a href="/" class="brand-link" aria-label="Trang chủ UTE-Calendar">
+        <span class="logo-mark"></span>
+        <span class="brand-name">UTE-Calendar</span>
+      </a>
+      <a href="/" class="back-link">Về trang chủ</a>
+    </header>
+
+    <main class="doc-content">
+      <h1 class="page-title">Dán thời khóa biểu</h1>
+      <p class="page-desc">Không cần mật khẩu. Bạn tự lấy bảng thời khóa biểu từ cổng trường rồi dán vào đây. Trang chỉ đọc chữ ngay trong trình duyệt của bạn, không gửi đi đâu cả.</p>
+      <p class="paste-trade">Cách này kém chính xác hơn đăng nhập: giờ kết thúc buổi học là ước tính, và lịch sẽ không tự đổi khi trường đổi phòng hay báo nghỉ. Nếu bạn thấy ổn với việc đăng nhập thì <a href="/" class="accent-link">đăng nhập</a> sẽ tiện hơn.</p>
+
+      <ol class="paste-steps">
+        <li>Đăng nhập <a href="https://online.hcmute.edu.vn" target="_blank" rel="noopener noreferrer" class="accent-link">cổng trường</a>. Vào menu <strong>Tra cứu thông tin</strong>, chọn <strong>Thời khóa biểu</strong>, rồi tab <strong>Thời khóa biểu SV/HV/NCS</strong>.</li>
+        <li>Chọn đúng <strong>Năm học</strong> và <strong>Học kỳ</strong>, bấm nút <strong>In thời khóa biểu</strong>. Một bảng tên "Xem thời khóa biểu" sẽ hiện ra, có cột "Tuần" dạng 02/11/2026-&gt;28/12/2026.</li>
+        <li>Dùng chuột <strong>quét chọn toàn bộ bảng</strong>, từ ô "STT" đến ô cuối cùng (Ctrl+A không chọn được bảng này). Sau đó nhấn <strong>Ctrl+C</strong> (điện thoại: bấm giữ vào chữ, kéo hai đầu chọn hết bảng, bấm Sao chép), rồi dán vào ô bên dưới.</li>
+      </ol>
+
+      <label for="pasteInput" class="form-label">Thời khóa biểu đã sao chép</label>
+      <textarea id="pasteInput" class="input-control paste-input" rows="8" placeholder="Dán vào đây..." spellcheck="false"></textarea>
+      <div id="pasteMessage" class="banner warning hidden"></div>
+
+      <section id="pasteResult" class="hidden">
+        <h2 class="paste-heading">Kiểm tra lại trước khi tải</h2>
+        <p class="text-muted paste-note">Bảng của trường chỉ ghi tiết bắt đầu, không ghi giờ kết thúc. Số tiết mỗi buổi bên dưới là <strong>ước tính</strong> từ số tín chỉ, bạn sửa được nếu sai. Giờ bắt đầu, ngày, phòng lấy đúng từ bảng.</p>
+        <div id="pasteCourses" class="paste-courses"></div>
+        <p id="pasteCount" class="text-muted paste-note"></p>
+        <div class="paste-actions">
+          <button type="button" id="pasteApple" class="btn-primary">Thêm vào Apple Lịch</button>
+          <button type="button" id="pasteGoogle" class="btn-secondary">Thêm vào Google Lịch</button>
+        </div>
+        <p id="pasteNext" class="paste-next hidden"></p>
+        <p class="paste-note"><button type="button" id="pasteDownload" class="btn-link">Chỉ tải file .ics</button></p>
+        <p class="text-muted paste-note">Đây là bản chụp lúc bạn dán. Khi trường đổi phòng hoặc báo nghỉ, bạn dán lại là được. Muốn lịch tự đổi theo thì dùng cách đăng nhập ở trang chủ.</p>
+      </section>
+    </main>
+  </div>
+  <script src="/paste-core.js"></script>
+  <script src="/paste.js"></script>
+</body>
+</html>

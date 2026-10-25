@@ -35,8 +35,10 @@ class TestSecurityHardening(unittest.TestCase):
         storage.delete("rl:login:mssv:22110088")
         storage.delete("rl:login:mssv:22110099")
         storage.delete("rl:login:mssv:../../victim")
+        for mssv in ("20119999", "22110088", "22110099"):
+            storage.delete(f"rl:login:lock:{mssv}")
         os.environ["SESSION_SECRET"] = "Test_Session_Secret_Key_99999"
-        
+
     def tearDown(self):
         ip_hash = hashlib.sha256(b"127.0.0.1").hexdigest()
         storage.delete(f"rl:login:ip:{ip_hash}")
@@ -44,6 +46,8 @@ class TestSecurityHardening(unittest.TestCase):
         storage.delete("rl:login:mssv:22110088")
         storage.delete("rl:login:mssv:22110099")
         storage.delete("rl:login:mssv:../../victim")
+        for mssv in ("20119999", "22110088", "22110099"):
+            storage.delete(f"rl:login:lock:{mssv}")
 
     def test_obsolete_bot_and_cron_routes_return_404(self):
         """1. Obsolete bot and cron endpoints must return 404."""
@@ -84,34 +88,34 @@ class TestSecurityHardening(unittest.TestCase):
         self.assertEqual(data["status"], "ok")
         self.assertIsInstance(data["redis"], bool)
 
-    def test_failed_login_rate_limiter(self):
-        """A2: Max 5 failed attempts per 10 min by IP and MSSV. 6th attempt returns 429."""
-        ip_hash = hashlib.sha256(b"127.0.0.1").hexdigest()
-        storage.delete(f"rl:login:ip:{ip_hash}")
-        storage.delete("rl:login:mssv:22110099")
+    def test_login_lock_grows_and_is_capped_at_five_minutes(self):
+        from src.web_server import _login_lock_seconds
 
-        # 5 failed login attempts
-        for _ in range(5):
+        locks = [_login_lock_seconds(n) for n in range(1, 10)]
+        self.assertEqual(locks, [0, 0, 15, 30, 60, 120, 240, 300, 300])
+
+    def test_third_wrong_password_locks_that_student_with_a_friendly_message(self):
+        """A2: wrong password #3 locks the MSSV for 15s; other students on the same IP are unaffected."""
+        for _ in range(2):
             r = self.client.post("/api/login", json={"username": "22110099", "password": "wrong_password_xyz"})
             self.assertEqual(r.status_code, 400)
+            self.assertNotIn("retry_after", r.get_json())
 
-        # 6th attempt with same IP and MSSV must be blocked with 429
-        r_blocked = self.client.post("/api/login", json={"username": "22110099", "password": "wrong_password_xyz"})
-        self.assertEqual(r_blocked.status_code, 429)
-        self.assertIn("quá nhiều lần", r_blocked.get_json().get("message", "").lower())
+        third = self.client.post("/api/login", json={"username": "22110099", "password": "wrong_password_xyz"})
+        self.assertEqual(third.status_code, 400)
+        self.assertEqual(third.get_json().get("retry_after"), 15)
+        self.assertIn("Quá tam ba bận", third.get_json().get("message", ""))
 
-        # Changing MSSV from same IP must also be blocked (same IP)
-        r_same_ip = self.client.post("/api/login", json={"username": "20119999", "password": "any"})
-        self.assertEqual(r_same_ip.status_code, 429)
+        blocked = self.client.post("/api/login", json={"username": "22110099", "password": "right_one_maybe"})
+        self.assertEqual(blocked.status_code, 429)
+        body = blocked.get_json()
+        self.assertTrue(1 <= body["retry_after"] <= 15)
+        self.assertIn("Quá tam ba bận", body["message"])
+        self.assertEqual(blocked.headers.get("Retry-After"), str(body["retry_after"]))
 
-        # Spoofed X-Forwarded-For without VERCEL env var does not bypass IP rate limit
-        os.environ.pop("VERCEL", None)
-        r_spoofed = self.client.post(
-            "/api/login",
-            headers={"X-Forwarded-For": "8.8.8.8"},
-            json={"username": "20119999", "password": "any"}
-        )
-        self.assertEqual(r_spoofed.status_code, 429)
+        # Another student behind the same campus Wi-Fi can still try
+        other = self.client.post("/api/login", json={"username": "20119999", "password": "any"})
+        self.assertEqual(other.status_code, 400)
 
     def test_regenerate_feed_token_rate_limiting(self):
         """A2: /api/calendar/feed-token/regenerate rate limit: 3 times / hour / user."""

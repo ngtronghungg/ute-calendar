@@ -950,3 +950,6 @@ body { padding-bottom: env(safe-area-inset-bottom); }
   #remindersActionBar { flex-direction: column; align-items: stretch; }
   #remindersActionBar .btn-secondary { width: 100%; }
 }
+
+/* Quiet alternative under the password field: visible, but secondary to signing in. */
+.login-alt { margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: var(--text-muted, rgba(255, 255, 255, 0.6)); }

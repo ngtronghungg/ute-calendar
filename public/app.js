@@ -208,8 +208,35 @@ let appState = {
       executeLogout();
     }
 
+    let loginCooldownTimer = null;
+
+    function formatWait(seconds) {
+      return seconds < 60 ? `${seconds} giây` : `${Math.ceil(seconds / 60)} phút`;
+    }
+
+    // After repeated wrong passwords the server locks the MSSV; mirror that with a visible countdown.
+    function startLoginCooldown(btn, seconds) {
+      clearInterval(loginCooldownTimer);
+      const until = Date.now() + seconds * 1000;
+      const tick = () => {
+        const left = Math.ceil((until - Date.now()) / 1000);
+        if (left <= 0) {
+          clearInterval(loginCooldownTimer);
+          loginCooldownTimer = null;
+          btn.disabled = false;
+          btn.innerHTML = `<span>Đăng nhập</span>`;
+          return;
+        }
+        btn.disabled = true;
+        btn.textContent = `Thử lại sau ${formatWait(left)}`;
+      };
+      tick();
+      loginCooldownTimer = setInterval(tick, 1000);
+    }
+
     async function handleLogin(e) {
       e.preventDefault();
+      if (loginCooldownTimer) return;
       const mssv = document.getElementById('mssvInput').value.trim();
       const pass = document.getElementById('passwordInput').value.trim();
       const btn = document.getElementById('loginSubmitBtn');
@@ -247,13 +274,16 @@ let appState = {
         } else {
           errorDiv.textContent = data.message || 'Đăng nhập không thành công. Vui lòng kiểm tra lại MSSV và Mật khẩu.';
           errorDiv.classList.remove('hidden');
+          if (data.retry_after) startLoginCooldown(btn, data.retry_after);
         }
       } catch (err) {
         errorDiv.textContent = 'Lỗi kết nối máy chủ: ' + err.message;
         errorDiv.classList.remove('hidden');
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<span>Đăng nhập</span>`;
+        if (!loginCooldownTimer) {
+          btn.disabled = false;
+          btn.innerHTML = `<span>Đăng nhập</span>`;
+        }
       }
     }
 

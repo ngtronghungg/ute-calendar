@@ -53,6 +53,10 @@
       "destination": "/faq.html"
     },
     {
+      "source": "/dan-lich",
+      "destination": "/dan-lich.html"
+    },
+    {
       "source": "/bao-mat",
       "destination": "/security.html"
     },
