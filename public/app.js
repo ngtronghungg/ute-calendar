@@ -338,7 +338,7 @@ let appState = {
       appState.currentTab = tabName;
       document.querySelectorAll('.nav-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
       const activeBtn = Array.from(document.querySelectorAll('.nav-tabs .tab-btn')).find(b =>
-        b.getAttribute('onclick').includes(tabName)
+        b.dataset.tab === tabName
       );
       if (activeBtn) activeBtn.classList.add('active');
 
