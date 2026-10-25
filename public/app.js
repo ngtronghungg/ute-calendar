@@ -106,7 +106,7 @@ let appState = {
           }
           if (data.repo_url) {
             const repoLinks = document.querySelectorAll('.repo-link');
-            repoLinks.forEach(a => { a.href = data.repo_url; a.style.display = 'inline'; });
+            repoLinks.forEach(a => { a.href = data.repo_url; a.classList.remove('hidden'); });
           }
         }
       } catch (e) {
@@ -1550,12 +1550,13 @@ let appState = {
 
         const cardAutoSync = document.getElementById('cardAutoSync');
         if (cardAutoSync) {
-          cardAutoSync.style.display = 'block';
+          cardAutoSync.classList.remove('hidden');
           const btnGuide = document.getElementById('btnToggleAutoGuide');
           const prepNotice = document.getElementById('autoSyncPrepNotice');
+          const guideBox = document.getElementById('autoSyncGuideBox');
           if (feed.auto_sync_template_url && feed.auto_sync_template_url.trim()) {
-            if (btnGuide) btnGuide.style.display = 'inline-flex';
-            if (prepNotice) prepNotice.style.display = 'none';
+            if (btnGuide) btnGuide.classList.remove('hidden');
+            if (prepNotice) prepNotice.classList.add('hidden');
             const btnCopy = document.getElementById('btnCopySheetLink');
             if (btnCopy) {
               let copyUrl = feed.auto_sync_template_url.trim();
@@ -1566,9 +1567,10 @@ let appState = {
               }
             }
           } else {
-            if (btnGuide) btnGuide.style.display = 'none';
+            if (btnGuide) btnGuide.classList.add('hidden');
+            if (guideBox) guideBox.classList.add('hidden');
             if (prepNotice) {
-              prepNotice.style.display = 'block';
+              prepNotice.classList.remove('hidden');
               prepNotice.textContent = 'Tính năng này đang được chuẩn bị.';
             }
           }

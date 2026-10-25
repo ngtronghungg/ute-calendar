@@ -33,6 +33,20 @@ def test_js_does_not_depend_on_inline_handler_attributes():
     assert 'getAttribute("onclick")' not in js
 
 
+def test_js_toggles_visibility_with_the_hidden_class_only():
+    # ui.css defines `.hidden { display: none !important }`, so `style.display = ...`
+    # can never reveal an element that carries that class.
+    js = _read("app.js")
+    assert "style.display" not in js, "use classList.add/remove('hidden') instead"
+
+
+def test_auto_sync_card_always_shows_a_button_or_a_notice():
+    html = _read("index.html")
+    assert 'id="btnToggleAutoGuide"' in html
+    assert 'id="autoSyncPrepNotice"' in html
+    assert "Tính năng này đang được chuẩn bị." in html
+
+
 def test_every_tab_button_matches_a_tab_panel():
     import re
 
