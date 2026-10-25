@@ -1533,7 +1533,7 @@ let appState = {
       return `Lấy lúc ${h}:${m} ngày ${day}/${month}`;
     }
 
-    async async function loadSyncTabInfo() {
+    async function loadSyncTabInfo() {
       updateDeviceSyncButton();
       try {
         const feed = await ensureFeedInfo();
