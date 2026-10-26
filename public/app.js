@@ -659,6 +659,8 @@ let appState = {
       const dayShorts = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
       const dayStrip = document.getElementById('mobileDayStrip');
       if (dayStrip) {
+        // The week grid and the list already show every day; only the single-day view needs a day picker.
+        dayStrip.classList.toggle('hidden', appState.scheduleViewMode !== 'day');
         dayStrip.innerHTML = dayShorts.map((shortName, i) => {
           const d = new Date(mon);
           d.setDate(mon.getDate() + i);
@@ -1912,25 +1914,19 @@ let appState = {
 
       let html = '';
       secondaryCals.forEach(cal => {
-        const isApple = isAppleDevice();
-        const primaryHref = isApple ? cal.webcal_url : 'https://calendar.google.com/calendar/u/0/r?cid=' + encodeURIComponent(cal.webcal_url);
-        const altHref = isApple ? 'https://calendar.google.com/calendar/u/0/r?cid=' + encodeURIComponent(cal.webcal_url) : cal.webcal_url;
-        const primaryLabel = isApple ? 'Thêm vào máy' : 'Thêm vào Google Lịch';
-        const altLabel = isApple ? 'Google Lịch' : 'Ứng dụng khác';
+        const googleHref = 'https://calendar.google.com/calendar/u/0/r?cid=' + encodeURIComponent(cal.webcal_url);
+        const icsHref = cal.url + (cal.url.includes('?') ? '&' : '?') + 'download=1';
 
         html += `
           <div class="secondary-cal-item">
             <div class="d-flex items-center gap-8">
-              <span class="cal-dot" style="background-color: ${cal.color || '#0072BC'}; width: 10px; height: 10px; border-radius: 50%; display: inline-block;"></span>
-              <span class="font-500">${cal.name}</span>
+              <span class="cal-dot" style="background-color: ${cal.color || '#0072BC'};"></span>
+              <span class="font-500">${escapeHtml(cal.name)}</span>
             </div>
-            <div class="d-flex gap-8">
-              <a href="${primaryHref}" target="_blank" rel="noopener" class="btn-secondary btn-sm" style="text-decoration: none;">
-                ${primaryLabel}
-              </a>
-              <a href="${altHref}" target="_blank" rel="noopener" class="btn-link text-12 text-muted" style="text-decoration: none; align-self: center;">
-                ${altLabel}
-              </a>
+            <div class="secondary-cal-actions">
+              <a href="${cal.webcal_url}" class="btn-secondary btn-sm">Apple</a>
+              <a href="${googleHref}" target="_blank" rel="noopener" class="btn-secondary btn-sm">Google</a>
+              <a href="${icsHref}" download class="btn-secondary btn-sm">.ics</a>
             </div>
           </div>
         `;

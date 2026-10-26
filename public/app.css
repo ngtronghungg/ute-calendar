@@ -953,3 +953,22 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 
 /* Quiet alternative under the password field: visible, but secondary to signing in. */
 .login-alt { margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: var(--text-muted, rgba(255, 255, 255, 0.6)); }
+
+/* Compact calendar actions: Apple, Google, .ics side by side. */
+.cal-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.secondary-cal-item { flex-wrap: wrap; gap: 8px 12px; }
+.secondary-cal-actions, .deadline-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.secondary-cal-actions .btn-sm, .deadline-actions .btn-sm { width: auto; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.deadline-actions { margin-bottom: 4px; }
+
+/* Phones: the week grid keeps its day names visible while it scrolls sideways. */
+@media (max-width: 640px) {
+  .matrix-session-th { position: sticky; left: 0; z-index: 1; width: 84px; min-width: 84px; padding: 8px; }
+  .matrix-table { min-width: 680px; }
+}
+.secondary-cal-actions .btn-sm, .deadline-actions .btn-sm { min-height: 34px; height: 34px; padding: 0 14px; font-size: 13px; }
+@media (max-width: 640px) {
+  .secondary-cal-item { flex-direction: column; align-items: stretch; }
+  .secondary-cal-actions, .deadline-actions { display: grid; grid-template-columns: repeat(3, 1fr); }
+}
+.deadline-actions .btn-sm { white-space: nowrap; padding: 0 8px; }
